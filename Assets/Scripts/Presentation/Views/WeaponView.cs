@@ -1,9 +1,10 @@
 ﻿using Core.Data.Weapon;
 using Core.Interface;
+using UnityEngine;
 
 namespace Presentation.Views
 {
-    public class WeaponView
+    public class WeaponView : MonoBehaviour
     {
         
         

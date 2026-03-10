@@ -1,0 +1,46 @@
+﻿/* 💡 화면 전체를 덮는 투명 컨테이너 (정렬용) */
+.screen-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    justify-content: flex-end; /* 아래쪽으로 밀기 */
+    align-items: center;       /* 가로 중앙 정렬 */
+    padding-bottom: 20px;      /* 바닥에서 살짝 띄우기 */
+    pointer-events: none;      /* 빈 공간은 클릭 통과되도록 설정 */
+}
+
+/* 📦 무기 패널 컨테이너 (가로로 길고, 짙은 회색, 두꺼운 흰 선) */
+.weapon-panel {
+    flex-direction: row;       /* 무기 칸들을 가로로 나열 */
+    background-color: rgb(40, 40, 40); /* 짙은 회색 */
+    border-color: white;       /* 흰색 선 */
+    border-width: 4px;         /* 두꺼운 선 */
+    border-radius: 4px;        /* 약간의 둥근 모서리 (선택) */
+    padding: 10px;             /* 내부 박스와의 격차(여백) 확보 */
+    pointer-events: all;       /* 패널 자체는 마우스 클릭을 받음 */
+}
+
+/* 🔫 개별 무기 칸 (짙은 회색, 두꺼운 흰 선) */
+.weapon-slot {
+    width: 140px;              /* 무기 칸의 고정 너비 */
+    height: 60px;              /* 무기 칸의 고정 높이 */
+    background-color: rgb(60, 60, 60); /* 패널보다 살짝 밝은 회색 */
+    border-color: white;
+    border-width: 3px;         /* 두꺼운 선 */
+    margin-left: 5px;          /* 무기 칸 사이의 간격 */
+    margin-right: 5px;
+    justify-content: center;   /* 텍스트 수직 중앙 정렬 */
+    align-items: center;       /* 텍스트 수평 중앙 정렬 */
+}
+
+/* 텍스트 스타일 */
+.weapon-label {
+    color: white;
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+/* 마우스 올렸을 때의 피드백 (선택 사항) */
+.weapon-slot:hover {
+    background-color: rgb(80, 80, 80);
+}

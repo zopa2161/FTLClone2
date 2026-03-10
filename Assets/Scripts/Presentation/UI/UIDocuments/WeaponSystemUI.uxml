@@ -1,0 +1,8 @@
+﻿<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" src="WeaponSystemUI.uss">
+    <ui:VisualElement class="screen-wrapper">
+
+        <ui:VisualElement name="WeaponPanel" class="weapon-panel">
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

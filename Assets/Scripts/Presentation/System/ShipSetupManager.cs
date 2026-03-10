@@ -63,7 +63,7 @@ namespace Presentation.System
             simCore.RegisterTickables(shipAPI.GetAllRooms() as IEnumerable<ITickable>);
             simCore.RegisterTickables(shipAPI.GetAllCrews() as IEnumerable<ITickable>);
             simCore.RegisterTickables(shipAPI.GetAllDoors() as IEnumerable<ITickable>);
-
+            simCore.RegisterTickables(shipAPI.GetAllWeapons() as IEnumerable<ITickable>);
             var shipSimulationManager = new ShipSimulationManager(shipAPI as SpaceShipManager);
 
             simCore.RegisterTickables(shipSimulationManager);
