@@ -12,7 +12,7 @@ namespace Presentation.System
 
         [Header("승무원 기획 데이터 카탈로그")] public List<CrewSOEntry> CrewSOList;
 
-        [Header("무기 SO 데이터 카탈로그")] public List<WeaponBaseSO> WeaponSOList;
+        [Header("무기 SO 데이터 카탈로그")] public List<WeaponSOEntry> WeaponSOList;
 
         private Dictionary<string, CrewBaseSO> _crewSODict;
 
@@ -47,7 +47,7 @@ namespace Presentation.System
             _weaponSO = new Dictionary<string, WeaponBaseSO>();
             foreach (var entry in WeaponSOList)
                 if (!_weaponSO.ContainsKey(entry.WeaponID))
-                    _weaponSO.Add(entry.WeaponID, entry);
+                    _weaponSO.Add(entry.WeaponID, entry.WeaponBaseSo);
                 else
                     Debug.LogWarning($"[AssetCatalog] 중복된 무기 ID 발견: {entry.WeaponID}");
         

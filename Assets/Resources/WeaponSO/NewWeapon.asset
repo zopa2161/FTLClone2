@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccd6c311dce94c3d8ff26ebbf34bfaeb, type: 3}
   m_Name: NewWeapon
   m_EditorClassIdentifier: Core::Core.Data.Weapon.WeaponBaseSO
-  WeaponID: 
-  WeaponName: 
+  WeaponID: Burst_Laser
+  WeaponName: Burst Laser
   Description: 
   Type: 0
   Damage: 1

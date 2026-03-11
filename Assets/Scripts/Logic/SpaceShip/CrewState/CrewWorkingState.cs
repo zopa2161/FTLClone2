@@ -5,7 +5,7 @@ namespace Logic.SpaceShip.CrewState
 {
     public class CrewWorkingState : ICrewState
     {
-        private readonly IRoomLogic _workingRoom;
+        private IRoomLogic _workingRoom;
 
         // 상태를 생성할 때, 어느 방에서 일하는지 알려줍니다.
         public CrewWorkingState(IRoomLogic room)
@@ -18,6 +18,15 @@ namespace Logic.SpaceShip.CrewState
             // 🌟 1. 방에 설정된 콘솔 방향으로 강제 회전 지시!
             crew.LookAt(_workingRoom.Data.ConsoleDirection);
 
+            _workingRoom = crew.GridMap.GetRoomAt(crew.CurrentCoord);
+            
+            if (_workingRoom != null)
+            {
+                // 2. 방에게 "나 일 시작했음!" (+1) 보고합니다.
+                _workingRoom.ChangeWorkingCrewCount(true);
+            }
+            
+            
             // 2. 방 로직에게 "나 여기서 일 시작했소" 알림 (회피율 증가, 무기 충전 속도 증가 등)
             // _workingRoom.SetManned(true); 
 
@@ -33,8 +42,8 @@ namespace Logic.SpaceShip.CrewState
         public void Exit(CrewLogic crew)
         {
             // 방에게 "나 일 그만두고 간다" 알림 (부스트 효과 제거)
-            // _workingRoom.SetManned(false);
-
+            _workingRoom.ChangeWorkingCrewCount(false);
+            
             Debug.Log($"[{crew.Data.CrewName}] 작업 중단.");
         }
     }

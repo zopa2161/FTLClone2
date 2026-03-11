@@ -1,49 +1,51 @@
-﻿/* 전체 컨테이너 (가로 정렬, 아래쪽 맞춤) */
+/* 💡 화면 전체를 덮는 투명 컨테이너 (정렬용) */
+.screen-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    justify-content: flex-end; /* 아래쪽으로 밀기 */
+      /* 가로 중앙 정렬 */
+    padding-bottom: 20px;
+}
 .power-panel-container {
     flex-direction: row;
     align-items: flex-end;
     padding: 10px;
-    background-color: rgba(0, 0, 0, 0.8); /* 반투명 배경 */
+    background-color: rgba(0, 0, 0, 0.8);
 }
 
-/* 🔋 좌측 원자로 전력 바 컨테이너 (아래서 위로 쌓임) */
 .reactor-bar-container {
     flex-direction: column-reverse;
     margin-right: 20px;
 }
 
-/* 🔋 좌측 원자로 바 기본 디자인 */
 .reactor-bar {
     width: 40px;
     height: 12px;
     margin-top: 2px;
-    background-color: rgb(50, 50, 50); /* 빈 상태 (회색) */
+    background-color: rgb(50, 50, 50);
     border-radius: 2px;
 }
 
 .reactor-bar.filled {
-    background-color: rgb(150, 255, 150); /* 찬 상태 (밝은 연두색) */
+    background-color: rgb(150, 255, 150);
 }
 
-/* 🚪 우측 방 컨트롤 그룹 (가로 정렬) */
 .room-controls-group {
     flex-direction: row;
 }
 
-/* 개별 방 컨트롤 컨테이너 (바 + 버튼 세로 정렬) */
 .room-control-column {
     flex-direction: column-reverse;
     align-items: center;
     margin-right: 10px;
 }
 
-/* 방 전력 바 컨테이너 */
 .room-bar-container {
     flex-direction: column-reverse;
-    margin-bottom: 5px; /* 버튼과의 간격 */
+    margin-bottom: 5px;
 }
 
-/* 방 전력 바 기본 디자인 */
 .room-bar {
     width: 24px;
     height: 8px;
@@ -53,14 +55,13 @@
 }
 
 .room-bar.filled {
-    background-color: rgb(0, 200, 0); /* 찬 상태 (초록색) */
+    background-color: rgb(0, 200, 0);
 }
 
-/* 🟢 동그란 방 버튼 */
 .room-button {
     width: 40px;
     height: 40px;
-    border-radius: 50%; /* 완벽한 원 */
+    border-radius: 50%;
     background-color: rgb(0, 100, 0);
     color: white;
     -unity-font-style: bold;
@@ -69,8 +70,12 @@
     border-color: rgb(0, 255, 0);
     justify-content: center;
     align-items: center;
+ 
+    picking-mode: position;
 }
 
 .room-button:hover {
     background-color: rgb(0, 150, 0);
 }
+
+

@@ -48,7 +48,6 @@ namespace Presentation.Views.UI
             {
                 // 전력이 필요 없는 방(MaxCapacity == 0)은 UI를 만들지 않습니다.
                 if (room.MaxPowerCapacity <= 0) continue;
-                Debug.Log("만들고는 있어요");
                 CreateRoomControlUI(room);
             }
 

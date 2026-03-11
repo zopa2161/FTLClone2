@@ -75,6 +75,7 @@ namespace Presentation.Views
             var color = _renderer.color;
             color.a = dangerAlpha;
             _renderer.color = color;
+            
         }
     }
 }

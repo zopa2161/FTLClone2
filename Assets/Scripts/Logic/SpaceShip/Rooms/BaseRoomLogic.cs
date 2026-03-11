@@ -10,6 +10,9 @@ namespace Logic.SpaceShip.Rooms
         private float _lastReportedOxygen = -1f;
 
         private List<TileLogic> _tileLogics;
+        
+        
+        
 
 
         public BaseRoomLogic(RoomData roomData)
@@ -28,6 +31,9 @@ namespace Logic.SpaceShip.Rooms
 
 
         public int RoomID => Data.RoomID;
+
+        public bool IsManned => Data.ISManned;
+        public event Action<bool> OnMannedStatusChanged;
 
         public IReadOnlyList<TileCoord> GetRoomTiles()
         {
@@ -63,7 +69,19 @@ namespace Logic.SpaceShip.Rooms
             // (참고) 나중에 여기서 전력이 0이 되었을 때 
             // 방의 기능을 끄는 로직(예: 산소 생산 중단)을 트리거할 수 있습니다.
         }
+        
+        //=== 승무원 근무 ===
+        public void ChangeWorkingCrewCount(bool isManned)
+        {
+            bool wasManned = IsManned;
 
+            Data.ISManned = isManned; 
+            // 🌟 상태가 바뀌었다면 (0명 -> 1명, 또는 1명 -> 0명) 무전을 칩니다!
+            if (wasManned != IsManned)
+            {
+                OnMannedStatusChanged?.Invoke(IsManned);
+            }
+        }
 
         public void OnTickUpdate()
         {

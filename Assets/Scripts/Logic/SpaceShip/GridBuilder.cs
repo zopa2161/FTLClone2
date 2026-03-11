@@ -20,6 +20,7 @@ namespace Logic.SpaceShip
             RebuildDoors(saveData.Doors);
             RebuildRooms(saveData.Rooms);
             RebuildCrews(saveData.Crews);
+            RebuildWeapons(saveData.EquippedWeapons);
 
             return _spaceShipManager;
         }
@@ -110,6 +111,8 @@ namespace Logic.SpaceShip
                 weaponLogics.Add(logic);
                 
             }
+            
+            _spaceShipManager.SetWeapons(weaponLogics);
         }
     }
     

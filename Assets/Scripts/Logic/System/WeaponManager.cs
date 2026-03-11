@@ -3,11 +3,12 @@ using System.Linq;
 using Core.Interface;
 using UnityEngine;
 
-namespace Presentation.System
+namespace Logic.System
 {
     public class WeaponManager
     {
         private List<IWeaponLogic> _weapons = new List<IWeaponLogic>();
+        private const float MANNING_BONUS_MULTIPLIER = 1.2f;
 
         // 외부에서 장착된 무기 목록을 볼 수 있게 열어둠
         public IReadOnlyList<IWeaponLogic> Weapons => _weapons;
@@ -21,6 +22,9 @@ namespace Presentation.System
             if (_weaponRoom != null)
             {
                 _weaponRoom.OnPowerChanged += HandleRoomPowerChanged;
+                _weaponRoom.OnMannedStatusChanged += HandleWeaponRoomManned;
+                
+                HandleWeaponRoomManned(_weaponRoom.IsManned);
             }
 
         }
@@ -95,6 +99,20 @@ namespace Presentation.System
                     if (currentUsed <= limitPower) break;
                 }
             }
+        }
+        
+        private void HandleWeaponRoomManned(bool isManned)
+        {
+            // 승무원이 있으면 1.2배속, 없으면 정상 속도(1.0배)
+            float currentMultiplier = isManned ? MANNING_BONUS_MULTIPLIER : 1.0f;
+
+            // 휘하의 모든 무기들에게 배수를 일괄 적용합니다.
+            foreach (var weapon in _weapons)
+            {
+                weapon.SetChargeMultiplier(currentMultiplier);
+            }
+            
+            UnityEngine.Debug.Log($"[WeaponManager] 승무원 배치 상태 변경됨: {isManned}. 장전 속도 배수: {currentMultiplier}");
         }
         
         public IWeaponLogic GetWeapon(int index)

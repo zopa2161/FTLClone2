@@ -9,17 +9,21 @@ namespace Logic.SpaceShip.Weapons
     {
         // 💡 1틱당 더해질 시간 (예: 시뮬레이션이 초당 10틱이라면 0.1f)
         private const float TICK_TIME_STEP = 0.1f;
-
+        
+        private float _chargeMultiplier = 1.0f;
+        
+        private WeaponBaseSO _baseData;
         public WeaponData Data { get; private set; }
 
+        public WeaponBaseSO BaseData => _baseData;
         public bool IsPowered => Data.IsPowered;
 
         // 장전 타이머가 쿨타임 이상 도달했는가?
-        public bool IsReadyToFire => Data.CurrentChargeTimer >= Data.BaseData.BaseCooldown;
+        public bool IsReadyToFire => Data.CurrentChargeTimer >= BaseData.BaseCooldown;
 
         // 0.0 ~ 1.0 비율 반환
         public float ChargeProgress =>
-            Data.BaseData.BaseCooldown > 0f ? Mathf.Clamp01(Data.CurrentChargeTimer / Data.BaseData.BaseCooldown) : 1f;
+            BaseData.BaseCooldown > 0f ? Mathf.Clamp01(Data.CurrentChargeTimer / BaseData.BaseCooldown) : 1f;
 
         public event Action<float> OnChargeUpdated;
         public event Action<bool> OnPowerStateChanged;
@@ -29,6 +33,11 @@ namespace Logic.SpaceShip.Weapons
         {
             Data = data;
         }
+        
+        public void SetBaseData(WeaponBaseSO weaponBase)
+        {
+            _baseData = weaponBase;
+        }
 
         public void OnTickUpdate()
         {
@@ -36,11 +45,11 @@ namespace Logic.SpaceShip.Weapons
             if (!IsPowered || IsReadyToFire) return;
 
             // 타이머 증가
-            Data.CurrentChargeTimer += TICK_TIME_STEP;
+            Data.CurrentChargeTimer += (TICK_TIME_STEP * _chargeMultiplier);
 
             // 한도 초과 방지
-            if (Data.CurrentChargeTimer > Data.BaseData.BaseCooldown)
-                Data.CurrentChargeTimer = Data.BaseData.BaseCooldown;
+            if (Data.CurrentChargeTimer > BaseData.BaseCooldown)
+                Data.CurrentChargeTimer = BaseData.BaseCooldown;
 
             // UI 갱신을 위해 무전 발송
             OnChargeUpdated?.Invoke(ChargeProgress);
@@ -90,6 +99,12 @@ namespace Logic.SpaceShip.Weapons
             OnFired?.Invoke();
 
             return true;
+        }
+        
+        //충전 배수 세팅 함수
+        public void SetChargeMultiplier(float multiplier)
+        {
+            _chargeMultiplier = multiplier;
         }
     }
 }

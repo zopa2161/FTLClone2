@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Core.Data.SpaceShip;
 using Core.Data.Storage;
+using Core.Data.Weapon;
 using Core.enums;
 using UnityEngine;
 
@@ -244,10 +245,15 @@ namespace Presentation.Test
             crew2.CurrentY = 3;
             CrewDatas.Add(crew2);
 
+            var WeaponData = new List<WeaponData>();
+            var weapon1 = new WeaponData("Burst_Laser");
+            WeaponData.Add(weapon1);
+
             data.Tiles = TileDatas;
             data.Rooms = RoomDatas;
             data.Doors = DoorDatas;
             data.Crews = CrewDatas;
+            data.EquippedWeapons = WeaponData;
 
             SaveLoadManager.Save(data, SaveFileName);
         }

@@ -25,7 +25,11 @@ namespace Core.Data.Weapon
         // 현재 발사할 타겟(적 우주선의 특정 방 ID 등)이 지정되어 있는가?
         public int TargetRoomID = -1; // -1이면 타겟 없음
 
-        // 런타임에 SO에서 읽어온 참조 (직렬화 안 함)
-        [NonSerialized] public WeaponBaseSO BaseData;
+        
+
+        public WeaponData(string weaponID)
+        {
+            WeaponID = weaponID;
+        }
     }
 }

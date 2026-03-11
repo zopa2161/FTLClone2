@@ -1,14 +1,14 @@
-﻿/* 💡 화면 전체를 덮는 투명 컨테이너 (정렬용) */
+﻿/* 🪟 통유리판 (화면 전체 크기, 클릭 무시) */
 .screen-wrapper {
     position: absolute;
     width: 100%;
     height: 100%;
-    justify-content: flex-end; /* 아래쪽으로 밀기 */
-    align-items: center;       /* 가로 중앙 정렬 */
-    padding-bottom: 20px;      /* 바닥에서 살짝 띄우기 */
-    pointer-events: none;      /* 빈 공간은 클릭 통과되도록 설정 */
-}
+    /* 🌟 핵심: 이 투명한 영역에 닿는 마우스 클릭은 전부 뒤로 통과시킵니다! */
 
+    /*pickingMode : PickingMode.Ignore;*/
+    justify-content: flex-end; /* 안의 내용물을 아래로 밀어냄 */
+    align-items: center;       /* 안의 내용물을 중앙 정렬 */
+}
 /* 📦 무기 패널 컨테이너 (가로로 길고, 짙은 회색, 두꺼운 흰 선) */
 .weapon-panel {
     flex-direction: row;       /* 무기 칸들을 가로로 나열 */
@@ -40,7 +40,47 @@
     -unity-font-style: bold;
 }
 
+/* 🔌 전력 OFF 상태의 무기 슬롯 (옅은 회색 테두리) */
+.weapon-slot.off {
+    border-color: rgb(120, 120, 120); /* 옅은 회색 */
+    background-color: rgb(50, 50, 50); /* 배경도 살짝 더 어둡게 (선택) */
+}
+
+/* 🔌 전력 OFF 상태의 텍스트 (옅은 회색 글자) */
+.weapon-label.off {
+    color: rgb(150, 150, 150); /* 옅은 회색 */
+}
+
 /* 마우스 올렸을 때의 피드백 (선택 사항) */
 .weapon-slot:hover {
     background-color: rgb(80, 80, 80);
+}
+
+/* 🔋 장전 게이지 배경 (어두운 색상, 약간의 여백) */
+.weapon-charge-bg {
+    width: 90%;              /* 박스 너비의 90% 차지 */
+    height: 12px;            /* 게이지의 높이 */
+    background-color: rgb(20, 20, 20);
+    border-radius: 2px;
+    margin-top: 8px;         /* 무기 이름 텍스트와의 간격 */
+    overflow: hidden;        /* 알맹이가 배경을 뚫고 나가지 않도록 방지 */
+    border-color: rgb(80, 80, 80);
+    border-width: 1px;
+}
+
+/* 🟩 장전 게이지 알맹이 (초록색, 기본 너비 0%) */
+.weapon-charge-fill {
+    width: 0%;               /* C# 코드로 이 값을 조작할 예정! */
+    height: 100%;
+    background-color: rgb(0, 200, 0); /* 장전 중인 초록색 */
+}
+
+/* ⚡ 장전 완료 시 색상 변화 (선택 사항) */
+.weapon-charge-fill.ready {
+    background-color: rgb(0, 255, 255); /* 완료되면 시안(밝은 하늘색)으로 번쩍임 */
+}
+
+/* 🔌 전력이 꺼졌을 때의 게이지 색상 */
+.weapon-charge-fill.unpowered {
+    background-color: rgb(100, 100, 100); /* 회색 */
 }

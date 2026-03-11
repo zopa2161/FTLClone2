@@ -39,7 +39,10 @@ namespace Logic.SpaceShip
             return _crews;
         }
 
-        public List<IWeaponLogic> GetAllWeapons() => _weapons;
+        public List<IWeaponLogic> GetAllWeapons()
+        {
+            return _weapons;
+        } 
 
         //=== IGridMap 구현 함수===//
         public List<TileCoord> GetConnectedNeighbors(TileCoord current)

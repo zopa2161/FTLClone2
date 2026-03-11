@@ -7,7 +7,7 @@ namespace Core.Interface
     {
         // 원본 및 상태 데이터
         WeaponData Data { get; }
-
+        WeaponBaseSO BaseData { get; }
         // 상태 확인용 프로퍼티
         bool IsPowered { get; }
         bool IsReadyToFire { get; }
@@ -27,5 +27,10 @@ namespace Core.Interface
 
         // 발사 명령 (조건이 맞으면 발사 후 타이머 초기화)
         bool TryFire();
+        
+        // 외부에서 세팅값 넣어주기
+        void SetBaseData(WeaponBaseSO weaponBase);
+
+        void SetChargeMultiplier(float multiplier);
     }
 }

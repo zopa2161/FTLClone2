@@ -13,6 +13,7 @@ namespace Core.Data.SpaceShip
         public int MaxPower; // 최대 할당 가능 전력
         public int CurrentAllocatedPower; // 현재 할당된 전력
         public int CurrentAllocateToWeapon = 0; //무기 방을 위한 전용 
+        public bool ISManned;
 
         //고장난 정도
         //0,30,60을 임계점으로 정해 놓고 ㅇㅇ

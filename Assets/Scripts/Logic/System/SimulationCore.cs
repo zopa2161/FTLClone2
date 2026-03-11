@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Core.Interface;
+using UnityEngine;
 
 namespace Logic.System
 {
@@ -13,6 +14,7 @@ namespace Logic.System
 
         public void RegisterTickables(IEnumerable<ITickable> tickables)
         {
+            if(tickables == null)Debug.Log("null");
             _tickables.AddRange(tickables);
         }
 
