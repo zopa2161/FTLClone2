@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" src="PowerSystemUI.uss" editor-extension-mode="False">
     <Style src="project://database/Assets/Scripts/Presentation/UI/Styles/PowerSystemUI.uss?fileID=7433441132597879392&amp;guid=e796cd323ab24ed79c6cb2a026682b12&amp;type=3#PowerSystemUI"/>
-    <ui:VisualElement name="VisualElement" class="screen-wrapper" style="flex-grow: 1; flex-direction: column;">
+    <ui:VisualElement name="overlay" style="flex-grow: 1; flex-direction: column-reverse;">
         <ui:VisualElement class="power-panel-container">
             <ui:VisualElement name="ReactorBarContainer" class="reactor-bar-container"/>
             <ui:VisualElement name="RoomControlsGroup" class="room-controls-group"/>

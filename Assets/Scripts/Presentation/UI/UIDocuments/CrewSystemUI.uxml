@@ -1,6 +1,8 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/Scripts/Presentation/UI/Styles/CrewSystemUI.uss?fileID=7433441132597879392&amp;guid=CrewSystemUI&amp;type=3#CrewSystemUI"/>
-    <ui:VisualElement name="overlay" class="screen-wrapper">
-        <ui:VisualElement name="CrewPanel" class="crew-panel"/>
+    <Style src="project://database/Assets/Scripts/Presentation/UI/Styles/CrewSystemUI.uss?fileID=7433441132597879392&amp;guid=4e7dee72a7def274d9e287e368b9627d&amp;type=3#CrewSystemUI"/>
+    <ui:VisualElement name="overlay" style="flex-direction: column-reverse;">
+        <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+            <ui:VisualElement name="CrewPanel" class="crew-panel"/>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -30,6 +30,9 @@ namespace Presentation.Views.UI
             _commandManager = commandManager;
 
             var root = Document.rootVisualElement;
+             var overlay = root.Q<VisualElement>("overlay");
+            overlay.pickingMode = PickingMode.Ignore;
+            
             _reactorBarContainer = root.Q<VisualElement>("ReactorBarContainer");
             _roomControlsGroup = root.Q<VisualElement>("RoomControlsGroup");
 

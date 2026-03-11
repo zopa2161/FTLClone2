@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Core.Data.Crews;
 using Core.Interface;
+using Logic.System;
 using Presentation.System;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,15 +12,20 @@ namespace Presentation.Views.UI
     {
         public UIDocument Document;
 
+        private LogicCommandManager _commandManager;
         private VisualElement _crewPanel;
 
-        // 살아있는 동안 이벤트 구독을 추적하기 위한 딕셔너리
+        // CrewID → 슬롯 루트 VisualElement
         private readonly Dictionary<int, VisualElement> _slotDict = new();
 
-        public void Initialize(IReadOnlyList<ICrewLogic> crewLogics)
-        {
-            var root = Document.rootVisualElement;
+        // 현재 선택된 CrewID (-1 = 없음)
+        private int _selectedCrewID = -1;
 
+        public void Initialize(IReadOnlyList<ICrewLogic> crewLogics, LogicCommandManager commandManager)
+        {
+            _commandManager = commandManager;
+
+            var root = Document.rootVisualElement;
             var overlay = root.Q<VisualElement>("overlay");
             overlay.pickingMode = PickingMode.Ignore;
 
@@ -32,11 +38,19 @@ namespace Presentation.Views.UI
                 var crewBase = AssetCatalogManager.Instance.GetCrewBaseData(crew.Data.BaseDataID);
                 CreateCrewSlot(crew, crewBase);
             }
+
+            // 외부(게임 월드 클릭 등)에서 선택이 바뀌었을 때 UI 동기화
+            _commandManager.OnSelectionChanged += HandleSelectionChanged;
+        }
+
+        private void OnDestroy()
+        {
+            if (_commandManager != null)
+                _commandManager.OnSelectionChanged -= HandleSelectionChanged;
         }
 
         private void CreateCrewSlot(ICrewLogic crew, CrewBaseSO crewBase)
         {
-            // 카드 루트
             var slot = new VisualElement();
             slot.AddToClassList("crew-slot");
             _slotDict[crew.CrewID] = slot;
@@ -54,12 +68,10 @@ namespace Presentation.Views.UI
             // 체력바
             var healthBg = new VisualElement();
             healthBg.AddToClassList("crew-health-bg");
-
             var healthFill = new VisualElement();
             healthFill.AddToClassList("crew-health-fill");
             healthBg.Add(healthFill);
 
-            // 조립
             slot.Add(portrait);
             slot.Add(nameLabel);
             slot.Add(healthBg);
@@ -71,6 +83,37 @@ namespace Presentation.Views.UI
             // 이벤트 구독
             crew.OnHealthChanged += (current, max) => UpdateHealthBar(healthFill, current, max);
             crew.OnDied += _ => HandleCrewDied(crew.CrewID);
+
+            // 슬롯 클릭 → 선택 / 재클릭 → 선택 해제
+            var capturedCrewID = crew.CrewID;
+            slot.RegisterCallback<PointerDownEvent>(evt =>
+            {
+                if (evt.button != 0) return;
+              
+
+                if (_selectedCrewID == capturedCrewID)
+                    _commandManager.DeselectCrew();
+                else
+                    _commandManager.SelectCrew(crew,true);
+            });
+        }
+
+        // OnSelectionChanged 수신 → 슬롯 시각 동기화
+        private void HandleSelectionChanged(ICrewLogic selectedCrew)
+        {
+            // 이전 선택 해제
+            if (_selectedCrewID != -1 && _slotDict.TryGetValue(_selectedCrewID, out var prevSlot))
+                prevSlot.RemoveFromClassList("selected");
+
+            if (selectedCrew == null)
+            {
+                _selectedCrewID = -1;
+                return;
+            }
+
+            _selectedCrewID = selectedCrew.CrewID;
+            if (_slotDict.TryGetValue(_selectedCrewID, out var newSlot))
+                newSlot.AddToClassList("selected");
         }
 
         private void UpdateHealthBar(VisualElement fill, float current, float max)

@@ -45,7 +45,7 @@ namespace Presentation.System
 
 
             spaceShipView.Bind(shipAPI, shipAPI.GetAllTiles(), shipAPI.GetAllRooms(), shipAPI.GetAllDoors());
-            SetupCrews(shipAPI.GetAllCrews(), spaceShipView);
+            var crewViews = SetupCrews(shipAPI.GetAllCrews(), spaceShipView);
 
             var weaponManager = new WeaponManager();
             SetupWeapons(shipAPI.GetAllWeapons(), spaceShipView);
@@ -87,6 +87,8 @@ namespace Presentation.System
             // 6. 입력 매니저 초기화
             var inputManager = FindObjectOfType<MouseInputManager>();
             inputManager.Initialize();
+            inputManager.RegisterCrewViews(crewViews);
+            var commandManager = inputManager.CommandManager;
 
 
             // 7. UI셋업
@@ -110,14 +112,15 @@ namespace Presentation.System
             var crewSystemUI = FindObjectOfType<CrewSystemUIView>();
             if (crewSystemUI != null)
             {
-                crewSystemUI.Initialize(shipAPI.GetAllCrews());
+                crewSystemUI.Initialize(shipAPI.GetAllCrews(), commandManager);
             }
 
             Debug.Log("🚀 우주선 셋업 및 바인딩 완벽하게 종료!");
         }
 
-        private void SetupCrews(IEnumerable<ICrewLogic> crewLogics, SpaceShipView spaceShipView)
+        private List<CrewView> SetupCrews(IEnumerable<ICrewLogic> crewLogics, SpaceShipView spaceShipView)
         {
+            var result = new List<CrewView>();
             foreach (var crewLogic in crewLogics)
             {
                 var crewSO =
@@ -126,7 +129,9 @@ namespace Presentation.System
 
                 var crewView = crewObj.GetComponent<CrewView>();
                 crewView.Bind(crewSO.BaseDataSO, crewLogic, spaceShipView);
+                result.Add(crewView);
             }
+            return result;
         }
 
         private void SetupWeapons(IEnumerable<IWeaponLogic> weaponLogics, SpaceShipView spaceShipView)

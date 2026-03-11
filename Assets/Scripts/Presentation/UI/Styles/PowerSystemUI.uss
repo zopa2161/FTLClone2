@@ -1,12 +1,4 @@
-/* 💡 화면 전체를 덮는 투명 컨테이너 (정렬용) */
-.screen-wrapper {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    justify-content: flex-end; /* 아래쪽으로 밀기 */
-      /* 가로 중앙 정렬 */
-    padding-bottom: 20px;
-}
+
 .power-panel-container {
     flex-direction: row;
     align-items: flex-end;

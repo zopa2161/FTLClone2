@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" src="WeaponSystemUI.uss" editor-extension-mode="False">
     <Style src="project://database/Assets/Scripts/Presentation/UI/Styles/WeaponSystemUI.uss?fileID=7433441132597879392&amp;guid=d635f65f33f448118bace7f37c4af034&amp;type=3#WeaponSystemUI"/>
-    <ui:VisualElement name="overlay" class="screen-wrapper">
+    <ui:VisualElement name="overlay" style="flex-direction: column-reverse; flex-grow: 1;">
         <ui:VisualElement name="WeaponPanel" class="weapon-panel"/>
     </ui:VisualElement>
 </ui:UXML>

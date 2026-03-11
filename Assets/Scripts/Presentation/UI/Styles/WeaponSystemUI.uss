@@ -1,14 +1,4 @@
-﻿/* 🪟 통유리판 (화면 전체 크기, 클릭 무시) */
-.screen-wrapper {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    /* 🌟 핵심: 이 투명한 영역에 닿는 마우스 클릭은 전부 뒤로 통과시킵니다! */
-
-    /*pickingMode : PickingMode.Ignore;*/
-    justify-content: flex-end; /* 안의 내용물을 아래로 밀어냄 */
-    align-items: center;       /* 안의 내용물을 중앙 정렬 */
-}
+﻿
 /* 📦 무기 패널 컨테이너 (가로로 길고, 짙은 회색, 두꺼운 흰 선) */
 .weapon-panel {
     flex-direction: row;       /* 무기 칸들을 가로로 나열 */
@@ -18,6 +8,7 @@
     border-radius: 4px;        /* 약간의 둥근 모서리 (선택) */
     padding: 10px;             /* 내부 박스와의 격차(여백) 확보 */
     pointer-events: all;       /* 패널 자체는 마우스 클릭을 받음 */
+    align-self: center;
 }
 
 /* 🔫 개별 무기 칸 (짙은 회색, 두꺼운 흰 선) */

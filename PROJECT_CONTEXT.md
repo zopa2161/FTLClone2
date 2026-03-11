@@ -79,7 +79,7 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 | `ShipSimulationManager` | `ITickable`. 브리치 타일 BFS 거리맵 → 진공 바람 시뮬레이션. 산소 생성은 `OxygenRoomLogic` 위임 |
 | `PowerManager` | `IPowerSystem` 구현. 원자로 전력 할당(`TryAddPowerToRoom`)/회수(`TryRemovePowerFromRoom`) |
 | `WeaponManager` | 무기 ON/OFF, 전력 초과 시 뒤에서부터 강제 종료. 승무원 배치 보너스 1.2x (`SetChargeMultiplier`) |
-| `LogicCommandManager` | 승무원 선택/이동 명령 브릿지. `SelectCrew()`, `OrderMoveCommand()`, `DeselectCrew()` |
+| `LogicCommandManager` | 승무원 선택/이동 명령 브릿지. `SelectCrew(crew, clickedByUI)`, `OrderMoveCommand()`, `DeselectCrew()`. `OnSelectionChanged`, `OnCrewUIClicked` 이벤트 제공 |
 | `AStarPathfinder` | static. 맨해튼 거리 휴리스틱 A*. 반환값: `Queue<TileCoord>` |
 
 ---
@@ -94,7 +94,7 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 | `GameSessionManager` | Singleton. `Awake()`에서 JSON 로드 → `ShipSaveData` 보유, `HandOverData()` 제공 |
 | `AssetCatalogManager` | Singleton. SO 카탈로그 (ShipHull / Crew / Weapon) List→Dictionary 변환 |
 | `ShipSetupManager` | 게임 시작 시 전체 조립. GridBuilder → SpaceShipView.Bind() → PowerManager/WeaponManager 초기화 → SimulationCore 등록 → UI 초기화 |
-| `MouseInputManager` | 좌클릭(승무원 선택 / 문 토글), 우클릭(이동 명령), Hover(방 하이라이트). `LogicCommandManager` 사용 |
+| `MouseInputManager` | 좌클릭(승무원 선택 / 문 토글), 우클릭(이동 명령), Hover(방 하이라이트). `OnCrewUIClicked` 이벤트로 UI 클릭과 인게임 클릭 충돌 방지. `RegisterCrewViews()`로 CrewView 등록. `CommandManager` 프로퍼티로 외부 공유 |
 | `UnityTimeProvider` | `MonoBehaviour.Update()` → `SimulationCore.AdvanceTime(Time.deltaTime)` |
 
 ### Views
@@ -114,10 +114,13 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 |---|---|
 | `PowerSystemUIView` | 좌클릭=전력 할당, 우클릭=전력 회수. 방 바 동적 생성. `OnReactorPowerChanged`, `OnPowerChanged` 구독 |
 | `WeaponSystemUIView` | 무기 슬롯 동적 생성. 장전 게이지(%) 실시간 업데이트. 좌클릭=ON, 우클릭=OFF |
+| `CrewSystemUIView` | 승무원 슬롯 동적 생성. 초상화(`CrewBaseSO.DefaultSprite`), 이름, 체력바 표시. 슬롯 클릭=선택/재클릭=해제. `OnSelectionChanged` 구독 → 슬롯 시각 동기화. `OnHealthChanged`, `OnDied` 구독. 30% 이하 체력 시 danger 스타일. 사망 시 dead 스타일 |
 | `PowerSystemUI.uxml` | `ReactorBarContainer` + `RoomControlsGroup` |
 | `WeaponSystemUI.uxml` | `overlay` (클릭 무시) + `WeaponPanel` |
+| `CrewSystemUI.uxml` | `overlay` (클릭 무시) + `CrewPanel` (하단 고정) |
 | `PowerSystemUI.uss` | reactor-bar, room-bar, room-button 스타일 |
 | `WeaponSystemUI.uss` | weapon-slot, weapon-label, weapon-charge-bg/fill 스타일 |
+| `CrewSystemUI.uss` | crew-panel, crew-slot, crew-slot.selected(파란 테두리), crew-slot.dead(반투명 빨강), crew-portrait, crew-name, crew-health-bg/fill, crew-health-fill.danger 스타일 |
 
 ---
 
@@ -137,7 +140,8 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
    ├─ SimulationCore.RegisterTickables(rooms, crews, doors, weapons, shipSim)
    ├─ UnityTimeProvider.Initialize(simCore)
    ├─ PowerSystemUIView.Initialize()
-   └─ WeaponSystemUIView.Initialize()
+   ├─ WeaponSystemUIView.Initialize()
+   └─ CrewSystemUIView.Initialize(crewLogics, commandManager)
 4. UnityTimeProvider.Update() → SimulationCore.AdvanceTime(deltaTime)
    └─ 0.1초마다 ITickable.OnTickUpdate() 일괄 호출
 ```
@@ -165,3 +169,11 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 - `SimulateOxygenDiffusion()` — 구현되어 있으나 주석 처리됨
 - 씬 전환 (`SceneManager.LoadScene`) — 주석 처리됨
 - 발사체 생성 로직 — `WeaponLogic.TryFire()` 내 주석으로 TODO
+
+## 최근 추가 내역
+### 승무원 시스템 UI (CrewSystemUIView)
+- `CrewSystemUIView` 신규 추가: 하단 고정 승무원 패널. 슬롯 클릭으로 승무원 선택/해제
+- `CrewData`에 `CrewName` 필드 추가 (LogicCommandManager 로그에서 확인)
+- `LogicCommandManager.SelectCrew()` 에 `clickedByUI` 파라미터 추가 → `OnCrewUIClicked` 이벤트로 UI·게임월드 클릭 충돌 방지
+- `MouseInputManager`: `OnCrewUIClicked` 구독 → `_clickCrewUI` 플래그로 UI 클릭 시 인게임 클릭 무시
+- `ShipSetupManager`: CrewSystemUIView 초기화 추가, 방 UI 순서를 `SortRoomsForUI()`로 재정렬 (Shield→Engine→Medical→Oxygen→Weapon), `MaxPowerCapacity=0`인 방 제외
