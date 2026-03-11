@@ -85,9 +85,13 @@ namespace Logic.SpaceShip.Rooms
 
         public void OnTickUpdate()
         {
+            OnRoomTick(); // 서브클래스 전용 훅: 방별 틱 로직 처리
             if (_tileLogics.Count == 0) return;
             OnOxygenChanged?.Invoke(AverageOxygen);
         }
+
+        /// <summary>서브클래스에서 재정의하여 방별 틱 로직을 구현합니다.</summary>
+        protected virtual void OnRoomTick() { }
 
         public void Initialize(List<TileLogic> tileLogics)
         {

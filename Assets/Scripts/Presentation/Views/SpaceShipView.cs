@@ -12,6 +12,7 @@ namespace Presentation.Views
         public List<TileView> TileViews = new();
         public List<RoomView> RoomViews = new();
         public List<DoorView> DoorViews = new();
+        public ShieldView ShieldView;
 
         public SimulationCore SimulationCore { get; set; }
         // (선택) 타일 뷰나 승무원 뷰 리스트도 필요하다면 추가 가능
@@ -19,13 +20,14 @@ namespace Presentation.Views
         public void Bind(IShipAPI shipLogic, IReadOnlyList<ITileLogic> tileLogics, IReadOnlyList<IRoomLogic> roomLogics,
             IReadOnlyList<IDoorLogic> doorLogics)
         {
-            // 우주선 전체에 관련된 거시적 무전을 구독합니다.
-            //shipLogic.OnShipHullDamaged += TriggerShipShakeEffect;
-            //shipLogic.OnTotalBlackout += TurnOffAllRoomLights;
-
             BindTiles(tileLogics);
             BindRooms(roomLogics);
             BindDoors(doorLogics);
+        }
+
+        public void BindShield(IShieldLogic shieldLogic)
+        {
+            ShieldView?.Bind(shieldLogic);
         }
 
         private void BindTiles(IReadOnlyList<ITileLogic> tileLogics)

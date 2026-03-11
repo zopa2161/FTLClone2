@@ -16,6 +16,9 @@ namespace Core.Data.SpaceShip
         public int MaxReactorPower = 10;
 
 
+        //===실드===
+        public ShieldData Shield = new();
+
         //===무기===
         public int MaxWeaponSlots = 4;
 
