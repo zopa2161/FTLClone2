@@ -20,6 +20,9 @@ namespace Core.Data.SpaceShip
         //===실드===
         public ShieldData Shield = new();
 
+        //===자원===
+        public ResourceData Resources = new ResourceData();
+
         //===무기===
         public int MaxWeaponSlots = 4;
 

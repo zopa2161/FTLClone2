@@ -3,21 +3,21 @@ using Core.Data.SpaceShip;
 using Core.Data.Storage;
 using Core.Data.Weapon;
 using Core.enums;
-using NUnit.Framework.Constraints;
 using UnityEngine;
 
 namespace Presentation.Test
 {
     public class DefaultSheepMaker : MonoBehaviour
     {
-        [Header("파일 설정")] public string SaveFileName = "DefaultShipData";
+        [Header("파일 설정")] public string SaveFileName = "GameSave";
 
         [Header("우주선 기본 설정")] public string ShipHullID = "Cruiser_TypeA";
 
         [ContextMenu("데이터 굽기 (JSON으로 저장)")]
         public void BuildDefaultShip()
         {
-            var data = new ShipSaveData();
+            var gameSaveData = new GameSaveData();
+            var data = gameSaveData.Ship;
             data.ShipHullID = ShipHullID;
 
             data.MaxReactorPower = 10;
@@ -171,6 +171,7 @@ namespace Presentation.Test
 
             RoomDatas[0].TileCoords.Add(new TileCoord(14, 3));
             RoomDatas[0].TileCoords.Add(new TileCoord(14, 2));
+            RoomDatas[0].CurrentAllocatedPower =1;
 
             RoomDatas[1].TileCoords.Add(new TileCoord(13, 3));
             RoomDatas[1].TileCoords.Add(new TileCoord(12, 3));
@@ -179,10 +180,11 @@ namespace Presentation.Test
 
             RoomDatas[2].TileCoords.Add(new TileCoord(10, 3));
             RoomDatas[2].TileCoords.Add(new TileCoord(11, 3));
+            RoomDatas[2].CurrentAllocatedPower = 1;   
 
             RoomDatas[3].TileCoords.Add(new TileCoord(11, 2));
             RoomDatas[3].TileCoords.Add(new TileCoord(10, 2));
-
+            RoomDatas[3].CurrentAllocatedPower =1;
             RoomDatas[4].TileCoords.Add(new TileCoord(9, 4));
             RoomDatas[4].TileCoords.Add(new TileCoord(9, 3));
             RoomDatas[4].TileCoords.Add(new TileCoord(8, 3));
@@ -259,13 +261,15 @@ namespace Presentation.Test
             ShieldData.ChargeGauge= 0;
             ShieldData.CurrentShieldCount = 1;
 
+            data.Resources = new ResourceData { Fuel = 3, Missiles = 8, Drones = 2 };
+
             data.Tiles = TileDatas;
             data.Rooms = RoomDatas;
             data.Doors = DoorDatas;
             data.Crews = CrewDatas;
             data.EquippedWeapons = WeaponData;
 
-            SaveLoadManager.Save(data, SaveFileName);
+            SaveLoadManager.Save(gameSaveData, SaveFileName);
         }
 
         private void ConnectOpenTile(TileData tileA, TileData tileB)

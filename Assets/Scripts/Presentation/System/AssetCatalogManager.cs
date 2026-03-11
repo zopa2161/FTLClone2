@@ -55,6 +55,7 @@ namespace Presentation.System
 
         public GameObject GetShipHullPrefab(string hullID)
         {
+
             if (_shipHullDict.TryGetValue(hullID, out var prefab)) return prefab;
 
             Debug.LogError($"[AssetCatalog] 창고에 '{hullID}' 우주선이 없습니다!");

@@ -94,9 +94,9 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 | 클래스 | 역할 |
 |---|---|
 | `Singleton<T>` | DontDestroyOnLoad 싱글톤 기반 클래스 |
-| `GameSessionManager` | Singleton. `Awake()`에서 JSON 로드 → `ShipSaveData` 보유, `HandOverData()` 제공 |
+| `GameSessionManager` | Singleton. `Awake()`에서 JSON 로드 → `GameSaveData` 보유. `ShipData`, `MapData` 편의 접근자 제공. `SetMapData()`, `SaveGame()` 제공 |
 | `AssetCatalogManager` | Singleton. SO 카탈로그 (ShipHull / Crew / Weapon) List→Dictionary 변환 |
-| `ShipSetupManager` | 게임 시작 시 전체 조립. GridBuilder → SpaceShipView.Bind() → PowerManager/WeaponManager 초기화 → SimulationCore 등록 → UI 초기화 |
+| `ShipSetupManager` | 게임 시작 시 전체 조립. `GameSessionManager.ShipData`로 데이터 수신. GridBuilder → SpaceShipView.Bind() → PowerManager/WeaponManager 초기화 → SimulationCore 등록 → UI 초기화 |
 | `MouseInputManager` | 좌클릭(승무원 선택 / 문 토글), 우클릭(이동 명령), Hover(방 하이라이트). `OnCrewUIClicked` 이벤트로 UI 클릭과 인게임 클릭 충돌 방지. `RegisterCrewViews()`로 CrewView 등록. `CommandManager` 프로퍼티로 외부 공유 |
 | `UnityTimeProvider` | `MonoBehaviour.Update()` → `SimulationCore.AdvanceTime(Time.deltaTime)` |
 
@@ -174,6 +174,14 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 
 ---
 
+### GameSaveData 도입 — 최상위 세이브 데이터 통합
+- **신규 파일**:
+  - `Core/Data/Storage/GameSaveData.cs` — `ShipSaveData Ship` + `MapData Map` 보유. 최상위 직렬화 루트
+- **수정 파일**:
+  - `SaveLoadManager` — `Save<T>()` / `Load<T>()` 제네릭으로 교체 (ShipSaveData 전용 메서드 제거)
+  - `GameSessionManager` — `CurrentGameData`를 `GameSaveData`로 교체. `ShipData`, `MapData` 접근자 추가. `SetMapData()`, `SaveGame()` 추가. 세이브 없을 때 오류 대신 새 `GameSaveData()` 생성
+  - `ShipSetupManager` — `HandOverData()` → `GameSessionManager.Instance.ShipData` 로 변경
+
 ### 맵 시스템 스켈레톤 추가
 - **신규 파일**:
   - `Core/Data/Map/NodeData.cs` — `NodeType` enum, 노드 위치(X,Y 0~1 정규화), 연결 ID 목록, IsVisited, EventID
@@ -187,6 +195,44 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
   - `MapSetupManager` (Presentation/System) 추가 예정 — ShipSetupManager 패턴으로 조립
   - `MapScreen.uxml` / `MapScreen.uss` 추가 예정
   - `MapView.GetAllNodes()` 구현 시 `Initialize(IMapLogic, MapData)` 시그니처 변경 또는 `IMapData` 인터페이스 고려
+
+---
+
+### GameMainUI + 자원 시스템 + 맵 오버레이 추가
+- **신규 파일**:
+  - `Core/Data/SpaceShip/ResourceData.cs` — Fuel, Missiles, Drones int 필드 (Serializable)
+  - `Core/Interface/IResourceManager.cs` — 자원 조회/소비/추가 + 이벤트 인터페이스
+  - `Core/Interface/ICombatManager.cs` — IsInCombat, OnCombatStateChanged 인터페이스
+  - `Logic/System/ResourceManager.cs` — IResourceManager 순수 C# 구현체. Initialize(ResourceData)
+  - `Logic/System/CombatManager.cs` — ICombatManager 순수 C# 구현체. SetCombatState(bool)
+  - `Presentation/UI/GameMainUIView.cs` — UI Toolkit HUD. JUMP/업그레이드/설정 버튼 + FUEL/MSL/DRN 자원 표시. JUMP 조건: !IsInCombat && PilotRoom.IsManned && Fuel >= 1
+  - `Presentation/UI/Styles/GameMainUI.uss` — GameMain 패널 스타일 (자원 행 + 버튼 행)
+  - `Presentation/UI/Styles/MapUI.uss` — 맵 오버레이/컨테이너/노드/취소버튼 스타일
+- **수정 파일**:
+  - `ShipSaveData` — `ResourceData Resources` 필드 추가
+  - `DefaultSheepMaker` — 기본 자원값 설정 (Fuel=3, Missiles=8, Drones=2)
+  - `GameHUD.uxml` — GameMainPanel(상단 중앙) + MapOverlay(전체화면 모달) 추가. MapUI.uss 참조 추가
+  - `MapView.cs` — Initialize(IMapLogic, MapData) 시그니처 변경. Show()/Hide() 추가. GetAllNodes() 구현. reachable 외 SetEnabled(false). OnNodeJumped 이벤트 추가
+  - `ShipSetupManager` — ResourceManager/CombatManager 생성, 맵 생성(MapGenerator)/초기화(MapManager), MapView 초기화, GameMainUIView.Initialize() 호출
+
+**JUMP 흐름**: JUMP 클릭 → MapView.Show() → 노드 클릭 → MoveToNode() + OnNodeJumped 이벤트 → 연료 -1 → MapView.Hide()
+
+---
+
+### 저장 기능 구현
+- **데이터 동기화 현황**: 대부분의 Logic 클래스(CrewLogic, WeaponLogic, BaseRoomLogic, ShieldManager, DoorLogic, TileLogic, MapManager)는 자신의 Data 객체를 직접 mutate → 별도 동기화 불필요. MapManager._mapData는 GameSessionManager.CurrentGameData.Map과 동일 객체 참조이므로 MoveToNode() 결과도 자동 반영.
+- **수정 파일**:
+  - `Logic/System/ResourceManager` — `Initialize()`에서 `_data` 참조 보관. TryConsume*/Add* 호출 시 `_data` 필드도 동기화 (기존에는 내부 int만 변경하고 원본 ResourceData는 건드리지 않아 저장 누락)
+  - `Presentation/UI/GameMainUIView` — `OnNodeJumped()`에서 연료 소비 후 `GameSessionManager.Instance.SaveGame()` 호출 (노드 점프 시 자동저장)
+  - `Presentation/System/UnityTimeProvider` — `Ctrl+S` 단축키로 수동저장 추가
+
+---
+
+### 스페이스바 일시정지 기능 추가
+- **수정 파일**:
+  - `UnityTimeProvider` — `Input.GetKeyDown(KeyCode.Space)` 감지 → `_isPaused` 토글. 일시정지 중 `AdvanceTime()` 호출 중단. `UIDocument`에서 `PauseOverlay` 캐시 → `DisplayStyle.Flex/None` 전환
+  - `GameHUD.uxml` — `PauseOverlay` VisualElement 추가 (MapOverlay 형제, "PAUSED" + 재개 힌트 라벨)
+  - `MapUI.uss` — `.pause-overlay`, `.pause-label`, `.pause-hint` 스타일 추가 (display:none 초기값)
 
 ---
 

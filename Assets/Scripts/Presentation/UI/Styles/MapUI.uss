@@ -1,0 +1,153 @@
+/* ── 맵 오버레이 (전체 화면 모달) ─────────────────────────────── */
+
+.map-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 10, 0.88);
+    display: none;              /* Show() / Hide()에서 제어 */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── 맵 컨테이너 (노드 버튼 배치 영역) ─────────────────────────── */
+
+.map-container {
+    width: 80%;
+    height: 70%;
+    border-width: 2px;
+    border-color: rgba(80, 140, 200, 0.5);
+    border-radius: 8px;
+    background-color: rgba(10, 15, 30, 0.9);
+}
+
+/* ── CANCEL 버튼 (우하단 고정) ──────────────────────────────────── */
+
+.map-cancel-button {
+    position: absolute;
+    right: 40px;
+    bottom: 30px;
+    width: 120px;
+    height: 44px;
+    background-color: rgb(60, 20, 20);
+    border-color: rgb(180, 60, 60);
+    border-width: 2px;
+    border-radius: 6px;
+    color: rgb(220, 100, 100);
+    font-size: 14px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.map-cancel-button:hover {
+    background-color: rgb(80, 30, 30);
+    border-color: rgb(220, 80, 80);
+    color: rgb(255, 130, 130);
+}
+
+.map-cancel-button:active {
+    background-color: rgb(45, 15, 15);
+}
+
+/* ── 노드 버튼 베이스 ─────────────────────────────────────────── */
+
+.node-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border-width: 2px;
+    background-color: rgb(50, 50, 60);
+    border-color: rgb(100, 100, 120);
+    color: white;
+    font-size: 10px;
+    translate: -50% -50%;      /* 좌표가 버튼 중심 기준이 되도록 */
+    justify-content: center;
+    align-items: center;
+}
+
+/* ── 노드 타입별 색상 ─────────────────────────────────────────── */
+
+.node-button.start {
+    background-color: rgb(20, 80, 40);
+    border-color: rgb(0, 200, 80);
+}
+
+.node-button.normal {
+    background-color: rgb(30, 35, 55);
+    border-color: rgb(70, 90, 150);
+}
+
+.node-button.store {
+    background-color: rgb(70, 60, 10);
+    border-color: rgb(200, 170, 0);
+}
+
+.node-button.elite {
+    background-color: rgb(80, 30, 10);
+    border-color: rgb(220, 100, 30);
+}
+
+.node-button.exit {
+    background-color: rgb(50, 10, 80);
+    border-color: rgb(160, 60, 220);
+}
+
+/* ── 도달 가능 노드 (강조) ───────────────────────────────────── */
+
+.node-button.reachable {
+    border-color: rgb(0, 220, 255);
+    border-width: 3px;
+}
+
+.node-button.reachable:hover {
+    background-color: rgb(20, 60, 80);
+    border-color: rgb(80, 240, 255);
+}
+
+/* ── 현재 위치 노드 ──────────────────────────────────────────── */
+
+.node-button.current {
+    border-color: rgb(255, 220, 0);
+    border-width: 3px;
+    background-color: rgb(60, 50, 10);
+}
+
+/* ── 비활성 노드 (reachable 아님) ───────────────────────────── */
+
+.node-button:disabled {
+    opacity: 0.25;
+}
+
+/* ── 일시정지 오버레이 ───────────────────────────────────────── */
+
+.pause-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.pause-label {
+    font-size: 64px;
+    -unity-font-style: bold;
+    color: rgb(220, 220, 220);
+    letter-spacing: 12px;
+    -unity-text-align: middle-center;
+}
+
+.pause-hint {
+    font-size: 16px;
+    color: rgba(180, 180, 180, 0.7);
+    margin-top: 16px;
+    letter-spacing: 3px;
+    -unity-text-align: middle-center;
+}

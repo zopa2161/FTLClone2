@@ -32,7 +32,6 @@ namespace Presentation.Views.UI
             // 🌟 매니저에 등록된 무기 개수(n)만큼 UI 슬롯을 동적으로 생성
             for (int i = 0; i < _weaponManager.Weapons.Count; i++)
             {
-                Debug.Log("만들고는 있어요");
                 var weaponLogic = _weaponManager.Weapons[i];
                 CreateWeaponSlot(i, weaponLogic);
                 

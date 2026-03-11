@@ -1,0 +1,129 @@
+/* ── GameMain 패널 (자원 + JUMP / 업그레이드 / 설정) ─────────── */
+
+.game-main-panel {
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(20, 20, 30, 0.85);
+    border-color: rgba(80, 140, 200, 0.6);
+    border-width: 2px;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: 8px;
+}
+
+/* ── 자원 표시 행 ─────────────────────────────────────────────── */
+
+.resource-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.resource-item {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    min-width: 52px;
+}
+
+.resource-icon {
+    color: rgba(160, 180, 200, 0.8);
+    font-size: 10px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+}
+
+.resource-count {
+    color: rgb(220, 240, 255);
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.resource-divider {
+    width: 1px;
+    height: 30px;
+    background-color: rgba(80, 100, 130, 0.5);
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+/* ── 버튼 행 ─────────────────────────────────────────────────── */
+
+.game-main-buttons-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── 공통 버튼 베이스 ─────────────────────────────────────────── */
+
+.game-main-button {
+    width: 52px;
+    height: 52px;
+    border-radius: 6px;
+    border-width: 2px;
+    border-color: rgba(100, 100, 120, 0.8);
+    background-color: rgb(45, 45, 55);
+    color: rgb(200, 200, 210);
+    -unity-font-style: bold;
+    font-size: 13px;
+    margin-left: 6px;
+    margin-right: 6px;
+    justify-content: center;
+    align-items: center;
+    transition-duration: 0.1s;
+    transition-property: background-color, border-color;
+}
+
+.game-main-button:hover {
+    background-color: rgb(65, 65, 80);
+    border-color: rgba(140, 160, 200, 0.9);
+}
+
+.game-main-button:active {
+    background-color: rgb(35, 35, 45);
+    border-color: rgba(80, 100, 160, 0.8);
+}
+
+/* ── JUMP 버튼 (강조, 더 넓음) ───────────────────────────────── */
+
+.jump-button {
+    width: 90px;
+    height: 52px;
+    background-color: rgb(20, 60, 40);
+    border-color: rgb(0, 200, 100);
+    border-width: 2px;
+    color: rgb(0, 230, 120);
+    font-size: 16px;
+    letter-spacing: 2px;
+}
+
+.jump-button:hover {
+    background-color: rgb(30, 80, 55);
+    border-color: rgb(0, 255, 130);
+    color: rgb(50, 255, 150);
+}
+
+.jump-button:active {
+    background-color: rgb(15, 45, 30);
+}
+
+/* ── JUMP 비활성화 (조건 미충족) ─────────────────────────────── */
+
+.jump-button:disabled {
+    background-color: rgb(30, 35, 30);
+    border-color: rgba(50, 80, 50, 0.5);
+    color: rgba(80, 100, 80, 0.7);
+    opacity: 0.5;
+}
+
+/* ── 설정 / 업그레이드 버튼 비활성화 ─────────────────────────── */
+
+.game-main-button:disabled {
+    opacity: 0.35;
+}

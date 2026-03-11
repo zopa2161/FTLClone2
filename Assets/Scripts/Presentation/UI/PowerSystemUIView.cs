@@ -24,8 +24,7 @@ namespace Presentation.Views.UI
         public void Initialize(IPowerSystem powerSystem, IEnumerable<IRoomLogic> rooms,
             LogicCommandManager commandManager)
         {
-            Debug.Log(
-                $"PowerSystemUIView.Initialize: {powerSystem.MaxReactorPower} / {powerSystem.AvailableReactorPower}");
+
             _powerSystem = powerSystem;
             _commandManager = commandManager;
 

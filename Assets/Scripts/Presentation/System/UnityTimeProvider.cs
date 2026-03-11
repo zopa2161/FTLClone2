@@ -1,25 +1,43 @@
 ﻿using Logic.System;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Presentation.System
 {
     public class UnityTimeProvider : MonoBehaviour
     {
-        // 💡 로직 어셈블리에 있는 순수 C# 매니저를 들고 있습니다.
         private SimulationCore _simulationCore;
+        private bool _isPaused;
+        private VisualElement _pauseOverlay;
 
         private void Update()
         {
-            // 시뮬레이션 코어가 세팅되지 않았다면 무시
             if (_simulationCore == null) return;
 
-            // 💡 엔진의 렌더링 시간(deltaTime)을 순수 로직에게 먹여줍니다!
-            _simulationCore.AdvanceTime(Time.deltaTime);
+            if (Input.GetKeyDown(KeyCode.Space))
+                TogglePause();
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S))
+                GameSessionManager.Instance.SaveGame();
+
+            if (!_isPaused)
+                _simulationCore.AdvanceTime(Time.deltaTime);
         }
 
         public void Initialize(SimulationCore core)
         {
             _simulationCore = core;
+
+            var doc = FindObjectOfType<UIDocument>();
+            if (doc != null)
+                _pauseOverlay = doc.rootVisualElement.Q<VisualElement>("PauseOverlay");
+        }
+
+        private void TogglePause()
+        {
+            _isPaused = !_isPaused;
+            if (_pauseOverlay != null)
+                _pauseOverlay.style.display = _isPaused ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 }

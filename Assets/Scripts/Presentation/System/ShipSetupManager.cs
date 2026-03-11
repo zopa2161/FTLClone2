@@ -4,7 +4,9 @@ using System.Linq;
 using Core.Data.SpaceShip;
 using Core.Interface;
 using Logic.SpaceShip;
+using Logic.Map;
 using Logic.System;
+using Presentation.UI;
 using Presentation.Views;
 using Presentation.Views.UI;
 using UnityEngine;
@@ -24,7 +26,7 @@ namespace Presentation.System
         private void BeginSetup()
         {
             // 1. 배달부(GameSessionManager)에게서 데이터 가방 넘겨받기
-            var savedData = GameSessionManager.Instance.HandOverData();
+            var savedData = GameSessionManager.Instance.ShipData;
             if (savedData == null)
             {
                 Debug.LogError("[Setup] 전달받은 데이터가 없습니다!");
@@ -126,6 +128,34 @@ namespace Presentation.System
             {
                 shieldSystemUI.Initialize(shieldManager);
             }
+
+            var resourceManager = new ResourceManager();
+            resourceManager.Initialize(savedData.Resources);
+
+            var combatManager = new CombatManager();
+
+            // 맵 생성/로드
+            // JsonUtility는 null 클래스 필드를 빈 객체로 직렬화/역직렬화하므로
+            // null 체크 대신 Nodes.Count로 유효성을 판별합니다.
+            var mapData = GameSessionManager.Instance.MapData;
+            if (mapData == null || mapData.Nodes.Count == 0)
+            {
+                var mapGen = new MapGenerator();
+                mapData = mapGen.GenerateMap(columns: 7, maxRowsPerColumn: 3, mapWidth: 1f, mapHeight: 1f);
+                GameSessionManager.Instance.SetMapData(mapData);
+            }
+            var mapManager = new MapManager();
+            mapManager.Initialize(mapData);
+
+            var mapView = FindFirstObjectByType<MapView>();
+            if (mapView != null)
+                mapView.Initialize(mapManager, mapData);
+
+            var pilotRoom = shipAPI.GetAllRooms().FirstOrDefault(r => r.Data.RoomType == RoomTypeString.Pilot);
+
+            var gameMainUI = FindObjectOfType<GameMainUIView>();
+            if (gameMainUI != null && pilotRoom != null)
+                gameMainUI.Initialize(resourceManager, combatManager, pilotRoom, mapView);
 
             Debug.Log("🚀 우주선 셋업 및 바인딩 완벽하게 종료!");
         }

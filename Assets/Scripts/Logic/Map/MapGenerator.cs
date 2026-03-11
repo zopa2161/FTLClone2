@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Core.Data.Map;
+using UnityEngine;
+using Random = System.Random;
 
 namespace Logic.Map
 {
@@ -22,6 +25,7 @@ namespace Logic.Map
         /// <param name="mapHeight">맵 세로 크기 (UI 단위)</param>
         public MapData GenerateMap(int columns, int maxRowsPerColumn, float mapWidth, float mapHeight)
         {
+            UnityEngine.Debug.Log("맵 생성로직");
             var mapData = new MapData
             {
                 MapWidth  = mapWidth,

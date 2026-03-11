@@ -75,7 +75,7 @@ namespace Logic.SpaceShip
                 // 전력 상태가 1이상임을 확인해야함.
                 if (currentRoom.Data.CurrentAllocatedPower > 0) ChangeState(new CrewWorkingState(currentRoom));
 
-                Debug.Log($"[{Data.CrewName}] 스폰 즉시 {currentRoom.Data.RoomType} 작업 시작!");
+
             }
             else
             {
