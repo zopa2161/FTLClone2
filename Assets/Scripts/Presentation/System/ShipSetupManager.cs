@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Core.Data.SpaceShip;
 using Core.Interface;
@@ -63,9 +64,19 @@ namespace Presentation.System
             simCore.RegisterTickables(shipAPI.GetAllRooms() as IEnumerable<ITickable>);
             simCore.RegisterTickables(shipAPI.GetAllCrews() as IEnumerable<ITickable>);
             simCore.RegisterTickables(shipAPI.GetAllDoors() as IEnumerable<ITickable>);
-            simCore.RegisterTickables(shipAPI.GetAllWeapons() as IEnumerable<ITickable>);
+            //무기는 장착 상태가 아닐 수도 있으니까 일단 이렇게 함
+            if (shipAPI.GetAllWeapons() != null)
+            {
+                var iTickList = new List<ITickable>();
+                foreach (var weapon in shipAPI.GetAllWeapons())
+                {
+                    iTickList.Add(weapon as ITickable);
+                }
+                
+                simCore.RegisterTickables(iTickList);
+            }
             var shipSimulationManager = new ShipSimulationManager(shipAPI as SpaceShipManager);
-
+            
             simCore.RegisterTickables(shipSimulationManager);
 
             var timeProvider = FindObjectOfType<UnityTimeProvider>();
@@ -90,6 +101,18 @@ namespace Presentation.System
                 powerSystemUI.Initialize(powerManager, orderedRooms, shipAPI as LogicCommandManager); //눈을 감아줘
             }
 
+            var weaponSystemUI = FindObjectOfType<WeaponSystemUIView>();
+            if (weaponSystemUI != null)
+            {
+                weaponSystemUI.Initialize(weaponManager);
+            }
+
+            var crewSystemUI = FindObjectOfType<CrewSystemUIView>();
+            if (crewSystemUI != null)
+            {
+                crewSystemUI.Initialize(shipAPI.GetAllCrews());
+            }
+
             Debug.Log("🚀 우주선 셋업 및 바인딩 완벽하게 종료!");
         }
 
@@ -112,6 +135,7 @@ namespace Presentation.System
             {
                 var weaponSO =
                     AssetCatalogManager.Instance.GetWeaponBaseData(weaponLogic.Data.WeaponID);
+                weaponLogic.SetBaseData(weaponSO);
                 var weaponObj = Instantiate(defaultWeaponPrefab);
                 
                 var weaponView = weaponObj.GetComponent<WeaponView>();

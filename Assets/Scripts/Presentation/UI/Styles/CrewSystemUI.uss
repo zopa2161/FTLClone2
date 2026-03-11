@@ -1,0 +1,94 @@
+/* 화면 전체를 덮는 투명 컨테이너 (클릭 무시) */
+.screen-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    justify-content: flex-end; /* 아래쪽 정렬 */
+    align-items: flex-start;   /* 왼쪽 정렬 */
+    padding-bottom: 20px;
+    padding-left: 20px;
+}
+
+/* 승무원 카드들을 가로로 나열하는 패널 */
+.crew-panel {
+    flex-direction: row;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-color: white;
+    border-width: 3px;
+    border-radius: 4px;
+    padding: 8px;
+    pointer-events: all;
+}
+
+/* 개별 승무원 카드 */
+.crew-slot {
+    width: 80px;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 4px;
+    margin-right: 4px;
+    padding: 4px;
+    background-color: rgb(50, 50, 50);
+    border-color: rgb(180, 180, 180);
+    border-width: 2px;
+    border-radius: 3px;
+}
+
+.crew-slot:hover {
+    background-color: rgb(70, 70, 70);
+    border-color: white;
+}
+
+/* 사망 시 카드 스타일 */
+.crew-slot.dead {
+    border-color: rgb(100, 0, 0);
+    background-color: rgb(40, 20, 20);
+    opacity: 0.5;
+}
+
+/* 승무원 초상화 (스프라이트 표시 영역) */
+.crew-portrait {
+    width: 56px;
+    height: 56px;
+    background-color: rgb(30, 30, 30);
+    border-color: rgb(100, 100, 100);
+    border-width: 1px;
+    border-radius: 2px;
+    margin-bottom: 4px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+/* 승무원 이름 */
+.crew-name {
+    color: white;
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
+}
+
+/* 체력바 배경 */
+.crew-health-bg {
+    width: 100%;
+    height: 8px;
+    background-color: rgb(20, 20, 20);
+    border-color: rgb(80, 80, 80);
+    border-width: 1px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+/* 체력바 알맹이 (초록) */
+.crew-health-fill {
+    width: 100%;
+    height: 100%;
+    background-color: rgb(0, 200, 0);
+}
+
+/* 체력 30% 이하 위험 상태 */
+.crew-health-fill.danger {
+    background-color: rgb(220, 30, 30);
+}

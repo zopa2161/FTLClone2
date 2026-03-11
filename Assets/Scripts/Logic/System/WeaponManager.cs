@@ -26,7 +26,7 @@ namespace Presentation.System
         }
         public int GetUsedWeaponPower()
         {
-            return _weapons.Where(w => w.IsPowered).Sum(w => w.Data.BaseData.RequiredPower);
+            return _weapons.Where(w => w.IsPowered).Sum(w => w.BaseData.RequiredPower);
         }
         
         public int GetAvailableWeaponPower()
@@ -47,7 +47,7 @@ namespace Presentation.System
             if (turnOn)
             {
                 // 켜려고 할 때는 '남은 잉여 전력'이 무기의 요구량보다 큰지 검사!
-                if (GetAvailableWeaponPower() >= weapon.Data.BaseData.RequiredPower)
+                if (GetAvailableWeaponPower() >= weapon.BaseData.RequiredPower)
                 {
                     weapon.SetPower(true);
                     return true;
@@ -87,9 +87,9 @@ namespace Presentation.System
                 if (weapon.IsPowered)
                 {
                     weapon.SetPower(false);
-                    currentUsed -= weapon.Data.BaseData.RequiredPower;
+                    currentUsed -= weapon.BaseData.RequiredPower;
 
-                    Debug.Log($"[WeaponManager] 전력 부족! {weapon.Data.BaseData.WeaponName} 강제 종료됨.");
+                    Debug.Log($"[WeaponManager] 전력 부족! {weapon.BaseData.WeaponName} 강제 종료됨.");
 
                     // 한도 내로 들어왔으면 종료
                     if (currentUsed <= limitPower) break;

@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Scripts/Presentation/UI/Styles/CrewSystemUI.uss?fileID=7433441132597879392&amp;guid=CrewSystemUI&amp;type=3#CrewSystemUI"/>
+    <ui:VisualElement name="overlay" class="screen-wrapper">
+        <ui:VisualElement name="CrewPanel" class="crew-panel"/>
+    </ui:VisualElement>
+</ui:UXML>
