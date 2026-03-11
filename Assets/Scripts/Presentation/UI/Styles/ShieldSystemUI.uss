@@ -1,0 +1,51 @@
+/* 실드 패널 전체 박스 */
+.shield-panel {
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-color: white;
+    border-width: 3px;
+    border-radius: 4px;
+    padding: 8px;
+    pointer-events: none;
+}
+
+/* 원 4개가 가로로 나열되는 행 */
+.shield-circles-row {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+/* 개별 실드 원 (비활성: 검정) */
+.shield-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background-color: rgb(20, 20, 20);
+    border-color: rgb(100, 180, 220);
+    border-width: 2px;
+}
+
+/* 활성 실드 원 (하늘색) */
+.shield-circle.active {
+    background-color: rgb(60, 160, 230);
+    border-color: rgb(150, 220, 255);
+}
+
+/* 충전 게이지 배경 */
+.shield-charge-bg {
+    height: 8px;
+    background-color: rgb(20, 20, 20);
+    border-color: rgb(80, 80, 80);
+    border-width: 1px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+/* 충전 게이지 알맹이 (하늘색) */
+.shield-charge-fill {
+    width: 0%;
+    height: 100%;
+    background-color: rgb(60, 160, 230);
+}

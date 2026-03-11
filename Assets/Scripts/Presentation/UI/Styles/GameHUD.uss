@@ -1,0 +1,51 @@
+/* ── HUD 전체 레이아웃 ────────────────────────────────────────── */
+
+/* 전체 화면 오버레이. picking-mode: ignore 는 C# 코드에서 처리 */
+.hud-overlay {
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+/* ── 상단 행: 좌 상단 배치 ──────────────────────────────────── */
+.hud-top-row {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+/* ── 상단 행 내 좌우 여백 ────────────────────────────────────── */
+.hud-top-spacer {
+    flex-grow: 1;
+}
+
+/* ── 중간 여백 ────────────────────────────────────────────────── */
+.hud-spacer {
+    flex-grow: 1;
+}
+
+/* ── 하단 행 ──────────────────────────────────────────────────── */
+.hud-bottom-row {
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+/*
+ * 무기 UI 중앙 앵커.
+ * flex-grow:1 로 좌우 여백을 채우고 align-items: center 로 내부 콘텐츠를 가운데 정렬.
+ */
+.hud-bottom-center {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/*
+ * 우측 여백.
+ * 전력 패널(.power-panel-container)과 동일한 너비를 차지해
+ * 무기 UI가 화면 정중앙에 오도록 균형을 맞춤.
+ * power-panel-container 의 실제 렌더링 너비에 맞게 조정 필요.
+ */
+.hud-bottom-right {
+    flex-grow: 0;
+    width: 180px;   /* power-panel-container 실제 너비에 맞게 조정 */
+}

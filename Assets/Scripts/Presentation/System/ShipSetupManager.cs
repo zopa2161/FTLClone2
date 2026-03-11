@@ -42,6 +42,7 @@ namespace Presentation.System
             // 3. 논리적 타일/방 조립 (이전 대화의 GridBuilder 로직)
             var builder = new GridBuilder();
             var shipAPI = builder.Rebuild(savedData);
+            var shieldManager = shipAPI.GetShieldLogic();
 
 
             spaceShipView.Bind(shipAPI, shipAPI.GetAllTiles(), shipAPI.GetAllRooms(), shipAPI.GetAllDoors());
@@ -49,7 +50,7 @@ namespace Presentation.System
 
             var weaponManager = new WeaponManager();
             SetupWeapons(shipAPI.GetAllWeapons(), spaceShipView);
-            
+
             weaponManager.Initialize(shipAPI.GetAllWeapons(), shipAPI.GetAllRooms().First(x => x.Data.RoomType == RoomTypeString.Weapon));
 
 
@@ -76,19 +77,24 @@ namespace Presentation.System
                 simCore.RegisterTickables(iTickList);
             }
             var shipSimulationManager = new ShipSimulationManager(shipAPI as SpaceShipManager);
-            
             simCore.RegisterTickables(shipSimulationManager);
+
+            // 실드 매니저 등록 (ShieldRoom이 없는 경우 null일 수 있음)
+            if (shieldManager is ITickable shieldTick)
+                simCore.RegisterTickables(shieldTick);
 
             var timeProvider = FindObjectOfType<UnityTimeProvider>();
             timeProvider.Initialize(simCore);
 
             spaceShipView.SimulationCore = simCore;
+            spaceShipView.BindShield(shieldManager);
 
             // 6. 입력 매니저 초기화
             var inputManager = FindObjectOfType<MouseInputManager>();
             inputManager.Initialize();
             inputManager.RegisterCrewViews(crewViews);
             var commandManager = inputManager.CommandManager;
+            commandManager.SetAllCrews(shipAPI.GetAllCrews());
 
 
             // 7. UI셋업
@@ -113,6 +119,12 @@ namespace Presentation.System
             if (crewSystemUI != null)
             {
                 crewSystemUI.Initialize(shipAPI.GetAllCrews(), commandManager);
+            }
+
+            var shieldSystemUI = FindObjectOfType<ShieldSystemUIView>();
+            if (shieldSystemUI != null)
+            {
+                shieldSystemUI.Initialize(shieldManager);
             }
 
             Debug.Log("🚀 우주선 셋업 및 바인딩 완벽하게 종료!");

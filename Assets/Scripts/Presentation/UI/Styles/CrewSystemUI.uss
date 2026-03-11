@@ -1,7 +1,7 @@
 
-/* 승무원 카드들을 가로로 나열하는 패널 */
+/* 승무원 카드들을 세로로 나열하는 패널 */
 .crew-panel {
-    flex-direction: row;
+    flex-direction: column;
     background-color: rgba(0, 0, 0, 0.8);
     border-color: white;
     border-width: 3px;
@@ -10,13 +10,12 @@
     pointer-events: all;
 }
 
-/* 개별 승무원 카드 */
+/* 개별 승무원 카드 (좌: 초상화 / 우: 이름+체력바) */
 .crew-slot {
-    width: 80px;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-top: 4px;
+    margin-bottom: 4px;
     padding: 4px;
     background-color: rgb(50, 50, 50);
     border-color: rgb(180, 180, 180);
@@ -54,16 +53,23 @@
     -unity-background-scale-mode: scale-to-fit;
 }
 
+/* 우측 정보 컬럼 (이름 + 체력바) */
+.crew-info-column {
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: center;
+    margin-left: 6px;
+}
+
 /* 승무원 이름 */
 .crew-name {
     color: white;
     font-size: 11px;
     -unity-font-style: bold;
-    -unity-text-align: middle-center;
+    -unity-text-align: middle-left;
     margin-bottom: 4px;
     white-space: nowrap;
     overflow: hidden;
-    width: 100%;
 }
 
 /* 체력바 배경 */

@@ -122,12 +122,8 @@ namespace Presentation.System
                 var clickedRoom = hit.collider.GetComponent<RoomView>();
                 if (clickedRoom != null && clickedRoom.Logic != null)
                 {
-                    var tileCoords = clickedRoom.Logic.Data.TileCoords;
-                    if (tileCoords != null && tileCoords.Count > 0)
-                    {
-                        _commandManager.OrderMoveCommand(tileCoords[0]);
-                        Debug.Log($"[MouseInputManager] 우클릭 감지! 방({clickedRoom.Logic.Data.RoomType})의 첫 번째 타일 {tileCoords[0].X}, {tileCoords[0].Y}로 이동 명령 하달.");
-                    }
+                    _commandManager.OrderMoveToRoom(clickedRoom.Logic);
+                    Debug.Log($"[MouseInputManager] 우클릭 감지! 방({clickedRoom.Logic.Data.RoomType})으로 이동 명령 하달.");
                 }
             }
             else

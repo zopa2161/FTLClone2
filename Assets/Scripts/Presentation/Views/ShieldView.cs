@@ -4,12 +4,14 @@ using UnityEngine;
 namespace Presentation.Views
 {
     /// <summary>
-    /// 실드 시각화 뷰 (프레임).
-    /// ShieldRoomLogic의 OnShieldChanged 이벤트를 구독하여 실드 상태를 화면에 반영합니다.
+    /// 실드 시각화 뷰.
+    /// 실드 수가 0 → 1 이상이 되면 GameObject를 활성화하고,
+    /// 1 이상 → 0이 되면 비활성화합니다.
     /// </summary>
     public class ShieldView : MonoBehaviour
     {
         private IShieldLogic _logic;
+        private bool _isActive; // 현재 오브젝트 활성 상태 추적
 
         public void Bind(IShieldLogic shieldLogic)
         {
@@ -17,7 +19,7 @@ namespace Presentation.Views
             _logic.OnShieldChanged += HandleShieldChanged;
 
             // 초기 상태 반영
-            RefreshVisuals(_logic.CurrentShields, _logic.MaxShields, _logic.ChargeGauge);
+            ApplyActiveState(_logic.CurrentShields);
         }
 
         private void OnDestroy()
@@ -28,14 +30,16 @@ namespace Presentation.Views
 
         private void HandleShieldChanged(int current, int max, float chargeGauge)
         {
-            RefreshVisuals(current, max, chargeGauge);
+            // 0 ↔ 1 경계에서만 오브젝트 on/off
+            bool shouldBeActive = current > 0;
+            if (shouldBeActive != _isActive)
+                ApplyActiveState(current);
         }
 
-        private void RefreshVisuals(int current, int max, float chargeGauge)
+        private void ApplyActiveState(int currentShields)
         {
-            // TODO: 실드 시각화 구현 예정
-            // - max 개의 실드 아이콘 중 current 개를 활성화
-            // - chargeGauge (0~1) 로 충전 게이지 표시
+            _isActive = currentShields > 0;
+            gameObject.SetActive(_isActive);
         }
     }
 }

@@ -4,6 +4,7 @@ using Core.Data.Weapon;
 using Core.Interface;
 using Logic.SpaceShip.Rooms;
 using Logic.SpaceShip.Weapons;
+using Logic.System;
 
 namespace Logic.SpaceShip
 {
@@ -21,6 +22,7 @@ namespace Logic.SpaceShip
             RebuildRooms(saveData.Rooms);
             RebuildCrews(saveData.Crews);
             RebuildWeapons(saveData.EquippedWeapons);
+            _spaceShipManager.SetShieldLogic(saveData.Shield);
 
             return _spaceShipManager;
         }
@@ -114,6 +116,7 @@ namespace Logic.SpaceShip
             
             _spaceShipManager.SetWeapons(weaponLogics);
         }
+
     }
     
 }

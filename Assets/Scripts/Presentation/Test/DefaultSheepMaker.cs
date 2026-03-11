@@ -3,6 +3,7 @@ using Core.Data.SpaceShip;
 using Core.Data.Storage;
 using Core.Data.Weapon;
 using Core.enums;
+using NUnit.Framework.Constraints;
 using UnityEngine;
 
 namespace Presentation.Test
@@ -245,9 +246,18 @@ namespace Presentation.Test
             crew2.CurrentY = 3;
             CrewDatas.Add(crew2);
 
+            var crew3 = new CrewData(2, "Crew_Human", "Tyler");
+            crew3.CurrentX = 1;
+            crew3.CurrentY = 2;
+            CrewDatas.Add(crew3);
+
             var WeaponData = new List<WeaponData>();
             var weapon1 = new WeaponData("Burst_Laser");
             WeaponData.Add(weapon1);
+
+            var ShieldData = new ShieldData();
+            ShieldData.ChargeGauge= 0;
+            ShieldData.CurrentShieldCount = 1;
 
             data.Tiles = TileDatas;
             data.Rooms = RoomDatas;

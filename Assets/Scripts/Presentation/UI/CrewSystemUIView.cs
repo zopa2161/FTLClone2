@@ -55,26 +55,30 @@ namespace Presentation.Views.UI
             slot.AddToClassList("crew-slot");
             _slotDict[crew.CrewID] = slot;
 
-            // 초상화
+            // 좌측: 초상화
             var portrait = new VisualElement();
             portrait.AddToClassList("crew-portrait");
             if (crewBase != null && crewBase.DefaultSprite != null)
                 portrait.style.backgroundImage = new StyleBackground(crewBase.DefaultSprite);
 
-            // 이름
+            // 우측: 이름 + 체력바를 세로로 담는 컨테이너
+            var infoColumn = new VisualElement();
+            infoColumn.AddToClassList("crew-info-column");
+
             var nameLabel = new Label(crew.Data.CrewName);
             nameLabel.AddToClassList("crew-name");
 
-            // 체력바
             var healthBg = new VisualElement();
             healthBg.AddToClassList("crew-health-bg");
             var healthFill = new VisualElement();
             healthFill.AddToClassList("crew-health-fill");
             healthBg.Add(healthFill);
 
+            infoColumn.Add(nameLabel);
+            infoColumn.Add(healthBg);
+
             slot.Add(portrait);
-            slot.Add(nameLabel);
-            slot.Add(healthBg);
+            slot.Add(infoColumn);
             _crewPanel.Add(slot);
 
             // 초기 체력 렌더링

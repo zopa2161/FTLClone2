@@ -1,0 +1,49 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="../Styles/GameHUD.uss"/>
+    <Style src="../Styles/PowerSystemUI.uss"/>
+    <Style src="../Styles/WeaponSystemUI.uss"/>
+    <Style src="../Styles/CrewSystemUI.uss"/>
+    <Style src="../Styles/ShieldSystemUI.uss"/>
+
+    <!--
+        전체 화면을 덮는 오버레이.
+        각 UIView가 이 이름("overlay")을 공유하므로 반드시 유지.
+    -->
+    <ui:VisualElement name="overlay" class="hud-overlay">
+
+        <!-- ── 상단 행: 좌 상단 승무원 UI / 우 상단 실드 UI ── -->
+        <ui:VisualElement class="hud-top-row">
+            <ui:VisualElement name="CrewPanel" class="crew-panel"/>
+            <ui:VisualElement class="hud-top-spacer" picking-mode="Ignore"/>
+            <ui:VisualElement name="ShieldPanel" class="shield-panel">
+                <ui:VisualElement name="ShieldCirclesRow" class="shield-circles-row"/>
+                <ui:VisualElement class="shield-charge-bg">
+                    <ui:VisualElement name="ShieldChargeFill" class="shield-charge-fill"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- ── 중간 여백 (클릭 무시) ── -->
+        <ui:VisualElement class="hud-spacer" picking-mode="Ignore"/>
+
+        <!-- ── 하단 행: 좌 하단 전력 UI / 중앙 하단 무기 UI ── -->
+        <ui:VisualElement class="hud-bottom-row">
+
+            <!-- 전력 UI (좌 하단) -->
+            <ui:VisualElement class="power-panel-container">
+                <ui:VisualElement name="ReactorBarContainer" class="reactor-bar-container"/>
+                <ui:VisualElement name="RoomControlsGroup"   class="room-controls-group"/>
+            </ui:VisualElement>
+
+            <!-- 무기 UI (중앙 하단) -->
+            <ui:VisualElement class="hud-bottom-center">
+                <ui:VisualElement name="WeaponPanel" class="weapon-panel"/>
+            </ui:VisualElement>
+
+            <!-- 우측 여백: 전력 패널 너비만큼 확보해 무기 UI를 화면 중앙에 맞춤 -->
+            <ui:VisualElement class="hud-bottom-right" picking-mode="Ignore"/>
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

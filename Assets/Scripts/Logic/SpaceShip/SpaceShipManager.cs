@@ -2,6 +2,7 @@
 using Core.Data.SpaceShip;
 using Core.Interface;
 using Logic.SpaceShip.Rooms;
+using Logic.System;
 using UnityEngine;
 
 namespace Logic.SpaceShip
@@ -15,6 +16,7 @@ namespace Logic.SpaceShip
         private List<ITileLogic> _tiles = new();
         
         private List<IWeaponLogic> _weapons = new List<IWeaponLogic>();
+        private IShieldLogic _shieldLogic;
 
         //===인터페이스 함수===
 
@@ -42,7 +44,12 @@ namespace Logic.SpaceShip
         public List<IWeaponLogic> GetAllWeapons()
         {
             return _weapons;
-        } 
+        }
+
+        public IShieldLogic GetShieldLogic()
+        {
+            return _shieldLogic;
+        }
 
         //=== IGridMap 구현 함수===//
         public List<TileCoord> GetConnectedNeighbors(TileCoord current)
@@ -134,6 +141,22 @@ namespace Logic.SpaceShip
         public void SetWeapons(List<IWeaponLogic> weapons)
         {
             _weapons = weapons;
+        }
+
+        public void SetShieldLogic(ShieldData shieldData)
+        {
+            var shield = new ShieldManager();
+            IRoomLogic shieldRoom =null;
+            foreach(var room in _rooms)
+            {
+                if (room.Data.RoomType == RoomTypeString.Shield)
+                {
+                    shieldRoom = room;
+                    break;
+                }
+            }
+            shield.Initialize(shieldRoom,shieldData);
+            _shieldLogic = shield;
         }
     }
 }

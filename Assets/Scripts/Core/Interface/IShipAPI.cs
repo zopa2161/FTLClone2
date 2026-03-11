@@ -6,5 +6,6 @@ namespace Core.Interface
     {
         IReadOnlyList<ICrewLogic> GetAllCrews();
         List<IWeaponLogic> GetAllWeapons();
+        IShieldLogic GetShieldLogic();
     }
 }
