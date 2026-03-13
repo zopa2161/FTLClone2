@@ -103,34 +103,38 @@ namespace Presentation.Views.UI
             }
 
             // ==========================================
-            // 💡 5. 클릭 이벤트 (무기 ON/OFF)
+            // 💡 5. 클릭 이벤트 (무기 ON/OFF / 선택)
             // ==========================================
             slot.RegisterCallback<PointerDownEvent>(evt =>
             {
-                // 🖱️ 좌클릭 (0): 무기 켜기
-                if (evt.button == 0) 
+                // 🖱️ 좌클릭 (0): 꺼진 무기 → 켜기, 켜진 무기 → 선택/해제 토글
+                if (evt.button == 0)
                 {
-                    // 이미 켜져있다면 아무것도 하지 않음
-                    if (weaponLogic.IsPowered) return;
-
-                    bool success = _weaponManager.TryToggleWeaponPower(index, true);
-        
-                    if (!success)
+                    if (!weaponLogic.IsPowered)
                     {
-                        UnityEngine.Debug.Log("전력이 부족하여 무기를 켤 수 없습니다!");
-                        // (추후 에러 사운드나 UI 흔들림 연출 추가)
+                        bool success = _weaponManager.TryToggleWeaponPower(index, true);
+                        if (!success)
+                            UnityEngine.Debug.Log("전력이 부족하여 무기를 켤 수 없습니다!");
+                    }
+                    else
+                    {
+                        _weaponManager.SelectWeapon(index);
                     }
                 }
                 // 🖱️ 우클릭 (1): 무기 끄기
-                else if (evt.button == 1) 
+                else if (evt.button == 1)
                 {
-                    // 이미 꺼져있다면 아무것도 하지 않음
                     if (!weaponLogic.IsPowered) return;
-
-                    // 끄는 것은 전력 한도와 상관없이 언제나 성공함
                     _weaponManager.TryToggleWeaponPower(index, false);
                 }
             });
+
+            // 선택 상태 시각화
+            _weaponManager.OnWeaponSelectionChanged += (selectedIndex) =>
+            {
+                if (selectedIndex == index) slot.AddToClassList("selected");
+                else slot.RemoveFromClassList("selected");
+            };
         }
     }
 }

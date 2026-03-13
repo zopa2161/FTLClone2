@@ -1,4 +1,5 @@
-﻿using Core.Interface;
+﻿using Core.enums;
+using Core.Interface;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ namespace Presentation.Views
         [SerializeField] public int RoomID;
 
         [Header("시각적 컴포넌트")] public GameObject HighlightOverlay;
+        public GameObject TargetedMark;
 
         public SpriteRenderer _renderer;
 
@@ -16,6 +18,9 @@ namespace Presentation.Views
         //===에디터용 변수===
         private float lastAverageOxygen;
         public IRoomLogic Logic { get; private set; }
+        public Faction Faction { get; private set; } = Faction.Player;
+
+        public void SetFaction(Faction faction) { Faction = faction; }
 
 
         private void OnDestroy()
@@ -45,6 +50,11 @@ namespace Presentation.Views
 
             // 전력 변화 무전 구독 (예: 전력이 끊기면 방을 어둡게 만듦)
             //logic.OnPowerChanged += UpdateRoomLighting;
+        }
+
+        public void SetTargeted(bool isTargeted)
+        {
+            if (TargetedMark != null) TargetedMark.SetActive(isTargeted);
         }
 
         public void SetHighlight(bool isHovered)

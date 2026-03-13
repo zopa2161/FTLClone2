@@ -12,39 +12,89 @@ Core (순수 C# 데이터/인터페이스)
 
 ## Core 계층 (`Assets/Scripts/Core/`)
 
-### Data
-- `ShipSaveData` — JSON 직렬화 루트. `TileData`, `RoomData`, `DoorData`, `CrewData`, `WeaponData` 목록 + `ShieldData` 보유
-- `ShieldData` — `ChargeGauge(0~1)`, `CurrentShieldCount(0~4)` 보유
-- `TileCoord` — (X, Y) 구조체, 커스텀 `==` / `GetHashCode` 구현
-- `TileData` — OxygenLevel, BreachLevel, ConnectedNeighborCoords
-- `RoomData` — RoomID, RoomType, MaxPower, CurrentAllocatedPower, TileCoords, ConsoleDirection
-- `DoorData` — DoorID, TileA, TileB, IsOpen, IsForcedOpen
-- `CrewData` — CrewID, BaseDataID, CurrentX/Y, MaxHealth, CurrentHealth
-- `WeaponData` — WeaponID, IsPowered, CurrentChargeTimer, IsAutoFire, TargetRoomID
-- `WeaponBaseSO` — ScriptableObject. WeaponID, WeaponName, Damage, RequiredPower, BaseCooldown, WeaponType
-- `CrewBaseSO` — ScriptableObject. DefaultSprite
-- `SaveLoadManager` — JSON 직렬화/역직렬화 (`JsonUtility`)
+### Data/SpaceShip
+
+| 파일 | 설명 |
+|---|---|
+| `ShipSaveData` | JSON 직렬화 루트. Version, HullID, MaxReactorPower, MaxHullHealth(20), CurrentHullHealth(20), Shield, Resources, MaxWeaponSlots, EquippedWeapons + Tiles/Rooms/Doors/Crews 플랫 리스트 |
+| `TileCoord` | (X, Y) 구조체. 커스텀 `==` / `GetHashCode` 구현. 딕셔너리 키로 사용 |
+| `TileData` | 타일 영구 데이터. OxygenLevel(100f), BreachLevel, ConnectedNeighborCoords 목록 |
+| `RoomData` | 방 영구 데이터. RoomID, RoomType, MaxPower, CurrentAllocatedPower, DestructionLevel, IsManned, IsMannable, ConsoleDirection, TileCoords |
+| `DoorData` | 문 영구 데이터. DoorID, TileA, TileB, IsOpen, IsForcedOpen |
+| `CrewData` | 승무원 영구 데이터. CrewID, BaseDataID, CrewName, CurrentX/Y, MaxHealth(100f), CurrentHealth(100f) |
+| `ShieldData` | 실드 상태. ChargeGauge(0~1), CurrentShieldCount(0~4) |
+| `ResourceData` | 소모 자원. Fuel(3), Missiles(8), Drones(2), Scrap(0) |
+| `RoomTypeString` | 방 타입 문자열 상수. Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay |
+
+### Data/Weapon
+
+| 파일 | 설명 |
+|---|---|
+| `WeaponData` | 무기 런타임 상태. WeaponID, IsPowered, CurrentChargeTimer, IsAutoFire, TargetRoomID(-1=미지정) |
+| `WeaponBaseSO` | ScriptableObject 무기 정의. WeaponID, Name, Description, WeaponType, Damage, ProjectileCount, RequiredPower, BaseCooldown |
+
+### Data/Crews
+
+| 파일 | 설명 |
+|---|---|
+| `CrewBaseSO` | ScriptableObject 승무원 정의. CrewDataID, DefaultSprite |
+
+### Data/Map
+
+| 파일 | 설명 |
+|---|---|
+| `MapData` | 섹터 맵 데이터. 노드 목록, CurrentNodeID, 맵 크기, 컬럼 수 |
+| `NodeData` | 노드 데이터. NodeID, NodeType(Start/Normal/Store/Elite/Exit), 정규화 좌표(0~1), 연결 노드 ID 목록, IsVisited, EventID |
+| `MapEventBaseSO` | [DEPRECATED] EventSO로 대체됨 |
+
+### Data/Event
+
+| 파일 | 설명 |
+|---|---|
+| `SubEventBaseSO` | 모든 세부 이벤트의 추상 기반 SO. `SubEventID(string)` — DB 조회 + 세이브/로드용. `IsFinished(bool)` — true이면 이벤트 전체 종료, 점프 가능 상태로 복귀 |
+| `DialogSubEventSO` | 대화 세부 이벤트. SpeakerName, DialogText, List\<DialogChoice\>(ChoiceText + NextEvent 링크) |
+| `CombatSubEventSO` | 전투 세부 이벤트. EnemyShipData(ShipSaveData), NextEvent 링크 |
+| `RewardSubEventSO` | 보상 세부 이벤트. List\<RewardEntry\>(RewardType + Amount + WeaponID), NextEvent 링크 |
+| `EventSO` | 최상위 이벤트 SO. EventID, Title, StartEvent(SubEventBaseSO) 진입 링크. NodeData.EventID로 조회 |
+| `EventDatabaseSO` | **에디터 전용** 컨테이너 SO. Events/DialogEvents/CombatEvents/RewardEvents 목록 보유. Add/Remove + `GetSubEvent(string)` 메서드. `Assets/Data/EventDatabase.asset` 1개 운용 |
+| `EventSaveData` | 이벤트 진행 상황 직렬화. IsEventActive, ActiveEventID, ActiveSubEventID. GameSaveData.Event 필드로 보유 |
+| `RewardType` (enum) | Scrap, Fuel, Missiles, Drones, Weapon, MaxReactorPower |
+
+### Data/Storage
+
+| 파일 | 설명 |
+|---|---|
+| `GameSaveData` | 최상위 직렬화 루트. ShipSaveData + MapData + EventSaveData 통합 보유 |
+| `SaveLoadManager` | 정적 유틸. `Save<T>()` / `Load<T>()` — JsonUtility + Application.persistentDataPath |
+| `ShipHullEntry` | HullID → 프리팹 GameObject 매핑 구조체 |
+| `CrewSOEntry` | CrewDataID → CrewBaseSO 매핑 구조체 |
+| `WeaponSOEntry` | WeaponID → WeaponBaseSO 매핑 클래스 |
 
 ### Interface
+
 | 인터페이스 | 주요 멤버 |
 |---|---|
-| `IShipAPI` | `IGridMap` 상속 + `GetAllCrews()`, `GetAllWeapons()`, `GetShieldLogic()` |
+| `IEventLogic` | `IsEventActive`, `CurrentEvent`, `CurrentSubEvent` + `OnSubEventChanged`, `OnEventFinished` 이벤트 + `StartEvent()`, `CompleteDialogSubEvent(int)`, `CompleteCombatSubEvent()`, `CompleteRewardSubEvent()`, `GetSaveData()` |
+| `IShipAPI` | `IGridMap` 상속 + `GetAllCrews()`, `GetAllWeapons()`, `GetShieldLogic()`, `MaxHullHealth`, `CurrentHullHealth` |
 | `IGridMap` | `GetAllTiles/Rooms/Doors()`, `GetConnectedNeighbors()`, `GetDoorBetween()`, `GetRoomAt()`, `GetTileAt()` |
-| `IRoomLogic` | RoomID, Data, AverageOxygen, CurrentPower, MaxPowerCapacity, IsManned, `ChangePower()`, `ChangeWorkingCrewCount()`, `OnPowerChanged`, `OnOxygenChanged`, `OnMannedStatusChanged` |
-| `IWeaponLogic` | Data, BaseData, IsPowered, IsReadyToFire, ChargeProgress, `SetPower()`, `SetAutoFire()`, `SetTarget()`, `TryFire()`, `SetBaseData()`, `SetChargeMultiplier()`, `OnChargeUpdated`, `OnPowerStateChanged`, `OnFired` |
-| `ICrewLogic` | CrewID, Data, CurrentHealth, MaxHealth, `CommandMoveTo()`, `TakeDamage()`, `OnPositionChanged`, `OnHealthChanged`, `OnDied` |
-| `IDoorLogic` | DoorID, IsOpen, `SetDoorState()`, `ToggleDoorManual()`, `OnDoorStateChanged` |
+| `IRoomLogic` | RoomID, Data, AverageOxygen, CurrentPower, MaxPowerCapacity, IsManned + `ChangePower()`, `OnPowerChanged`, `OnOxygenChanged`, `OnMannedStatusChanged` |
+| `ICrewLogic` | CrewID, Data, CurrentHealth, MaxHealth + `CommandMoveTo()`, `TakeDamage()`, `OnPositionChanged`, `OnHealthChanged`, `OnDied` |
+| `IDoorLogic` | DoorID, IsOpen + `SetDoorState()`, `ToggleDoorManual()`, `OnDoorStateChanged` |
 | `ITileLogic` | TileCoord, OxygenLevel, BreachLevel |
-| `IPowerSystem` | MaxReactorPower, AvailableReactorPower, `TryAddPowerToRoom()`, `TryRemovePowerFromRoom()`, `OnReactorPowerChanged` |
-| `IShieldLogic` | MaxShields, CurrentShields, ChargeGauge, `TryAbsorbDamage()`, `OnShieldChanged(current, max, chargeGauge)` |
+| `IPowerSystem` | MaxReactorPower, AvailableReactorPower + `TryAddPowerToRoom()`, `TryRemovePowerFromRoom()`, `OnReactorPowerChanged` |
+| `IWeaponLogic` | Data, BaseData, IsPowered, IsReadyToFire, ChargeProgress(0~1) + `SetPower()`, `SetAutoFire()`, `SetTarget()`, `TryFire()`, `SetBaseData()`, `SetChargeMultiplier()`, `OnChargeUpdated`, `OnPowerStateChanged`, `OnFired` |
+| `IShieldLogic` | MaxShields, CurrentShields, ChargeGauge + `TryAbsorbDamage()`, `OnShieldChanged(current, max, chargeGauge)` |
+| `IResourceManager` | Fuel, Missiles, Drones, Scrap + 각 `OnXxxChanged` 이벤트, `TryConsume/Add` 메서드 |
+| `ICombatManager` | IsInCombat + `OnCombatStateChanged` |
+| `IMapLogic` | CurrentNode, `GetReachableNodes()`, `MoveToNode()`, `OnNodeChanged` |
 | `ITickable` | `OnTickUpdate()` |
 
 ### enums
-- `MoveDirection` — None, Up, Down, Left, Right
-- `WeaponType` — Laser, Missile, Beam
 
-### RoomTypeString (상수)
-Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
+| 파일 | 값 |
+|---|---|
+| `MoveDirection` | None, Up, Down, Left, Right |
+| `WeaponType` | Laser, Missile, Beam |
 
 ---
 
@@ -54,36 +104,61 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 
 | 클래스 | 역할 |
 |---|---|
-| `SpaceShipManager` | `IShipAPI` 구현체. 타일/방/문/승무원/무기/실드 목록 보유. 승무원 사망 시 명부 삭제. `SetShieldLogic()` / `GetShieldLogic()` 제공 |
-| `GridBuilder` | `ShipSaveData` → Logic 객체 일괄 조립 (`Rebuild()` 반환값: `IShipAPI`). `RebuildShield()` 추가 — Shield 방을 찾아 `ShieldManager` 생성 후 연결 |
+| `SpaceShipManager` | `IShipAPI` 구현체. 타일/방/문/승무원/무기/실드 목록 보유. MaxHullHealth·CurrentHullHealth 프로퍼티. 승무원 사망 시 명부 삭제 |
+| `GridBuilder` | `ShipSaveData` → Logic 객체 일괄 조립. `Rebuild()` 반환: `IShipAPI`. 실드·선체체력 초기화 포함 |
 | `RoomLogicFactory` | RoomType 문자열 → 구체 Room 클래스 생성 (switch 패턴) |
 | `TileLogic` | `ITileLogic` 구현. `Neighbors` 리스트(TileLogic 참조) 보유 |
-| `DoorLogic` | `IDoorLogic` + `ITickable`. `AUTO_CLOSE_DELAY_TICKS=5` 틱 후 자동 닫힘. `IsForcedOpen` 시 타이머 멈춤 |
-| `CrewLogic` | `ICrewLogic` + `ITickable`. FSM(`ICrewState`) + A* 경로. 산소 < 50f 시 0.5f/틱 피해 |
+| `DoorLogic` | `IDoorLogic` + `ITickable`. AUTO_CLOSE_DELAY_TICKS=5 후 자동 닫힘. IsForcedOpen 시 타이머 정지 |
+| `CrewLogic` | `ICrewLogic` + `ITickable`. FSM(ICrewState) + A* 경로. 산소 < 50f 시 0.5f/틱 피해 |
 
-#### 방 로직 (모두 BaseRoomLogic 상속)
-- `BaseRoomLogic` (abstract) — 전력 변경, 산소 평균, 승무원 근무 상태 공통 처리
-- `OxygenRoomLogic` — `GetOxygenGeneration()` (전력 1→1, 2→3, 3→6, 고장 시 -1)
-- `PilotRoomLogic`, `EngineRoomLogic`, `WeaponRoomLogic`, `ShieldRoomLogic`, `EmptyRoomLogic` — 현재는 생성자만 존재
-
-#### 승무원 FSM (CrewState)
-| 상태 | Enter | Execute | Exit |
-|---|---|---|---|
-| `CrewIdleState` | (없음) | (없음) | (없음) |
-| `CrewMovingState` | movingCount=3 | 3틱마다 한 칸 이동, 문 자동 개방, 목적지 도착 시 WorkingState or IdleState 전환 | (없음) |
-| `CrewWorkingState` | `LookAt(ConsoleDirection)`, 방에 근무 시작 보고 | (없음) | 방에 근무 종료 보고 |
-
-### System
+#### 방 로직 (`Logic/SpaceShip/Rooms/`)
 
 | 클래스 | 역할 |
 |---|---|
-| `SimulationCore` | `ITickable` 목록 관리. `AdvanceTime(deltaTime)` → `TickRate=0.1f` 간격 틱 발행. `TimeScale` 지원 |
-| `ShipSimulationManager` | `ITickable`. 브리치 타일 BFS 거리맵 → 진공 바람 시뮬레이션. 산소 생성은 `OxygenRoomLogic` 위임 |
-| `PowerManager` | `IPowerSystem` 구현. 원자로 전력 할당(`TryAddPowerToRoom`)/회수(`TryRemovePowerFromRoom`) |
-| `WeaponManager` | 무기 ON/OFF, 전력 초과 시 뒤에서부터 강제 종료. 승무원 배치 보너스 1.2x (`SetChargeMultiplier`) |
-| `ShieldManager` | `IShieldLogic` + `ITickable` 구현. Shield 방 전력·Manned 상태 참조 → 충전 진행. 전력 없으면 게이지/실드 초기화. `TryAbsorbDamage()` 로 피해 1회 흡수 |
-| `LogicCommandManager` | 승무원 선택/이동 명령 브릿지. `SelectCrew(crew, clickedByUI)`, `OrderMoveCommand()`, `OrderMoveToRoom(room)`, `DeselectCrew()`. `OnSelectionChanged`, `OnCrewUIClicked` 이벤트 제공. `SetAllCrews()`로 전체 크루 목록 주입 → 방 이동 시 빈 타일 순서대로 배정, 가득 차면 이동 불가 |
-| `AStarPathfinder` | static. 맨해튼 거리 휴리스틱 A*. 반환값: `Queue<TileCoord>` |
+| `BaseRoomLogic` | abstract. 전력 변경, 산소 평균, 승무원 근무 공통 처리. `OnRoomTick()` 가상 훅 |
+| `OxygenRoomLogic` | 산소 생성량 계산. 전력 1→1, 2→3, 3→6. 고장 시 -1 |
+| `PilotRoomLogic` | 현재 생성자만 존재 |
+| `EngineRoomLogic` | 현재 생성자만 존재 |
+| `WeaponRoomLogic` | 현재 생성자만 존재 |
+| `ShieldRoomLogic` | 현재 생성자만 존재 (실드 로직은 ShieldManager 위임) |
+| `EmptyRoomLogic` | 특수 기능 없음 |
+
+#### 승무원 FSM (`Logic/SpaceShip/CrewState/`)
+
+| 상태 | 동작 |
+|---|---|
+| `CrewIdleState` | 대기. 행동 없음 |
+| `CrewMovingState` | 3틱/칸 이동. 경로상 문 자동 개방. 도착 시 WorkingState 또는 IdleState 전환 |
+| `CrewWorkingState` | 콘솔 방향으로 회전 후 방에 근무 시작 보고. Exit 시 근무 종료 보고 |
+
+### System (`Logic/System/`)
+
+| 클래스 | 역할 |
+|---|---|
+| `SimulationCore` | ITickable 목록 관리. `AdvanceTime(deltaTime)` → TickRate=0.1f 간격 틱. TimeScale 지원. `UnregisterTickable(s)()` — pending removal 패턴으로 틱 도중 안전 제거 |
+| `ShipSimulationManager` | ITickable. BFS 거리맵으로 진공 바람 시뮬레이션. 산소 생성은 OxygenRoomLogic 위임 |
+| `PowerManager` | `IPowerSystem` 구현. 원자로 전력 할당/회수. 방별 최대치 초과 방지 |
+| `WeaponManager` | 무기 ON/OFF. 전력 초과 시 뒤에서부터 강제 종료. Manned 보너스 1.2x |
+| `ShieldManager` | `IShieldLogic` + `ITickable`. 75틱/1실드 충전. Manned 1.2× 보너스. `TryAbsorbDamage()` |
+| `ResourceManager` | `IResourceManager` 구현. Fuel/Missiles/Drones/Scrap 추적. 소비·증가 + 이벤트 발행 |
+| `CombatManager` | `ICombatManager` 구현. SetCombatState(bool) |
+| `LogicCommandManager` | 승무원 선택/이동 명령 브릿지. `SelectCrew(clickedByUI)`, `OrderMoveToRoom()`. `OnSelectionChanged`, `OnCrewUIClicked` 이벤트 |
+| `AStarPathfinder` | static. 맨해튼 거리 휴리스틱 A*. 반환: `Queue<TileCoord>` |
+| `WeaponLogic` | `IWeaponLogic` + `ITickable`. 0.1f/틱 충전(승수 적용). 자동발사·타겟·전력 관리. 충전/발사 이벤트 |
+
+### Event (`Logic/Event/`)
+
+| 클래스 | 역할 |
+|---|---|
+| `EventLogicManager` | `IEventLogic` 구현. 이벤트 진행 상태 추적. Dialog/Combat/Reward 서브이벤트 완료 처리. `IsFinished==true` 또는 `NextEvent==null` 시 `OnEventFinished` 발행. Reward 완료 시 `IResourceManager`로 보상 즉시 적용. `Initialize()` → 세이브에서 복원 |
+| `EnemyCombatManager` | `IEnemyCombatManager` + `ITickable`. `StartCombat(CombatSubEventSO)` → `GridBuilder`로 적군 Logic 조립 + SimulationCore 등록. 매 틱 적군 체력 체크 → 0 이하 시 `EndCombat()` + `CompleteCombatSubEvent()`. `EndCombat()` → `UnregisterTickables()` |
+
+### Map (`Logic/Map/`)
+
+| 클래스 | 역할 |
+|---|---|
+| `MapManager` | `IMapLogic` 구현. 노드 이동·방문 처리·이벤트 발행 |
+| `MapGenerator` | 컬럼 기반 절차적 맵 생성. 1~3 노드/컬럼, 컬럼 간 연결 보장, Start/Exit 지정 |
 
 ---
 
@@ -94,39 +169,69 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 | 클래스 | 역할 |
 |---|---|
 | `Singleton<T>` | DontDestroyOnLoad 싱글톤 기반 클래스 |
-| `GameSessionManager` | Singleton. `Awake()`에서 JSON 로드 → `GameSaveData` 보유. `ShipData`, `MapData` 편의 접근자 제공. `SetMapData()`, `SaveGame()` 제공 |
-| `AssetCatalogManager` | Singleton. SO 카탈로그 (ShipHull / Crew / Weapon) List→Dictionary 변환 |
-| `ShipSetupManager` | 게임 시작 시 전체 조립. `GameSessionManager.ShipData`로 데이터 수신. GridBuilder → SpaceShipView.Bind() → PowerManager/WeaponManager 초기화 → SimulationCore 등록 → UI 초기화 |
-| `MouseInputManager` | 좌클릭(승무원 선택 / 문 토글), 우클릭(이동 명령), Hover(방 하이라이트). `OnCrewUIClicked` 이벤트로 UI 클릭과 인게임 클릭 충돌 방지. `RegisterCrewViews()`로 CrewView 등록. `CommandManager` 프로퍼티로 외부 공유 |
-| `UnityTimeProvider` | `MonoBehaviour.Update()` → `SimulationCore.AdvanceTime(Time.deltaTime)` |
+| `GameSessionManager` | Singleton. Awake()에서 JSON 로드 → GameSaveData 보유. ShipData/MapData 접근자, SetMapData(), SaveGame() |
+| `AssetCatalogManager` | Singleton. SO 카탈로그(ShipHull/Crew/Weapon) List→Dictionary 변환 |
+| `ShipSetupManager` | 게임 시작 시 전체 조립. GridBuilder → View 바인딩 → 매니저 초기화 → SimulationCore 등록 → UI 초기화 |
+| `MouseInputManager` | 좌클릭(승무원 선택/문 토글), 우클릭(이동 명령), Hover(방 하이라이트). `OnCrewUIClicked`으로 UI·인게임 충돌 방지 |
+| `UnityTimeProvider` | Update() → SimulationCore.AdvanceTime(). Space=일시정지, Ctrl+S=수동저장 |
 
 ### Views
 
 | 클래스 | 역할 |
 |---|---|
-| `SpaceShipView` | Tile/Room/DoorView 바인딩 허브. `GetWorldPosition(x, y)` 제공. `BindShield(IShieldLogic)` 메서드 추가. `SimulationCore` 프로퍼티 보유 |
+| `SpaceShipView` | Tile/Room/DoorView 바인딩 허브. `GetWorldPosition(x,y)`, `BindShield()`, `SimulationCore` 프로퍼티 |
+| `TileView` | ITileLogic 바인딩. 에디터 Gizmos로 좌표 표시 |
 | `RoomView` | `OnOxygenChanged` 구독 → 산소 < 50f 시 빨간 오버레이 (Alpha 최대 0.5) |
-| `TileView` | `ITileLogic` 바인딩. 에디터 Gizmos로 좌표 표시 |
-| `DoorView` | `OnDoorStateChanged` 구독 → 스프라이트 교체 (OpenedDoor / ClosedDoor) |
+| `DoorView` | `OnDoorStateChanged` 구독 → 스프라이트 교체 (OpenedDoor/ClosedDoor) |
 | `CrewView` | `OnPositionChanged` → 방향 회전 + MoveTowards 이동. `OnHealthChanged` → 체력바. `OnDied` → Destroy |
-| `WeaponView` | `Bind()` 내용 **미구현** |
-| `ShieldView` | `IShieldLogic.OnShieldChanged` 구독 → 실드 0↔1 경계에서 GameObject on/off |
+| `WeaponView` | Bind() **미구현** |
+| `ShieldView` | `OnShieldChanged` 구독 → 실드 0↔1+ 경계에서 GameObject on/off |
 
 ### UI (Unity UI Toolkit)
 
-| 클래스/파일 | 역할 |
+| 클래스 | 역할 |
 |---|---|
-| `PowerSystemUIView` | 좌클릭=전력 할당, 우클릭=전력 회수. 방 바 동적 생성. `OnReactorPowerChanged`, `OnPowerChanged` 구독 |
-| `WeaponSystemUIView` | 무기 슬롯 동적 생성. 장전 게이지(%) 실시간 업데이트. 좌클릭=ON, 우클릭=OFF |
-| `CrewSystemUIView` | 승무원 슬롯 동적 생성. 초상화(`CrewBaseSO.DefaultSprite`), 이름, 체력바 표시. 슬롯 클릭=선택/재클릭=해제. `OnSelectionChanged` 구독 → 슬롯 시각 동기화. `OnHealthChanged`, `OnDied` 구독. 30% 이하 체력 시 danger 스타일. 사망 시 dead 스타일 |
-| `GameHUD.uxml` | **통합 HUD UXML** (신규). `overlay` 하나에 승무원(상단 좌), 전력(하단 좌), 무기(하단 중앙) 패널을 모두 포함. 각 서브 USS를 `@import` 방식으로 참조 |
-| `GameHUD.uss` | HUD 레이아웃 스타일. `hud-overlay`, `hud-top-row`, `hud-spacer`, `hud-bottom-row`, `hud-bottom-center`, `hud-bottom-right`(180px 우측 균형 여백) |
-| `PowerSystemUI.uxml` | `ReactorBarContainer` + `RoomControlsGroup` |
-| `WeaponSystemUI.uxml` | `overlay` (클릭 무시) + `WeaponPanel` |
-| `CrewSystemUI.uxml` | `overlay` (클릭 무시) + `CrewPanel` |
-| `PowerSystemUI.uss` | reactor-bar, room-bar, room-button 스타일 |
-| `WeaponSystemUI.uss` | weapon-slot, weapon-label, weapon-charge-bg/fill 스타일 |
-| `CrewSystemUI.uss` | crew-panel(좌상단 세로), crew-slot, crew-slot.selected(파란 테두리), crew-slot.dead(반투명 빨강), crew-portrait(56×56), crew-info-column(이름+체력바 세로 컨테이너), crew-name, crew-health-bg/fill, crew-health-fill.danger 스타일 |
+| `PowerSystemUIView` | 원자로 바(MaxPower-3개) + 방별 전력 컬럼 동적 생성. 좌클릭=할당, 우클릭=회수 |
+| `WeaponSystemUIView` | 무기 슬롯 동적 생성. 장전 게이지(%) 실시간. 좌클릭=ON, 우클릭=OFF |
+| `CrewSystemUIView` | 승무원 슬롯 동적 생성. 초상화+이름+체력바. 클릭=선택/재클릭=해제. 30% 이하=danger, 사망=dead |
+| `ShieldSystemUIView` | 실드 원형 인디케이터 4개 + 충전 게이지 바. `OnShieldChanged` 구독 |
+| `GameMainUIView` | JUMP/업그레이드/설정 버튼 + FUEL/MSL/DRN/SCR 자원 레이블. JUMP 조건: !전투 && 파일럿 탑승 && Fuel≥1 |
+| `EventDialogUIManager` | `IEventLogic.OnSubEventChanged` 구독. Dialog 시: 반투명 파란 오버레이 + 텍스트 + 선택지 버튼. Reward 시: 보상 목록 + Accept 버튼. `OnEventFinished` 시 오버레이 숨김 |
+| `HullHealthUIView` | 선체 체력 바 동적 생성(MaxHullHealth개). 1바=1HP. 초록(>66%), 노랑(>33%), 빨강(≤33%) |
+| `MapView` | 섹터 맵 오버레이. 노드 버튼 동적 생성(절대 위치). reachable/current CSS 클래스 토글. `OnNodeJumped` 이벤트 |
+
+### Test/Utility
+
+| 클래스 | 역할 |
+|---|---|
+| `DefaultSheepMaker` | ContextMenu로 DefaultShipData.json 생성. 기본 순양함(17방, 26문, 3승무원, 1무기) |
+
+---
+
+## UI 파일 (`Assets/Scripts/Presentation/UI/`)
+
+### UXML (레이아웃)
+
+| 파일 | 설명 |
+|---|---|
+| `GameHUD.uxml` | **통합 HUD** (메인). 좌측컬럼(체력바+SCR / 실드+리소스 / 승무원) + 버튼(JUMP/▲/⚙) + 하단(전력/무기) + 일시정지 오버레이 + 맵 오버레이 + **이벤트 오버레이(EventOverlay)** |
+| `PowerSystemUI.uxml` | ReactorBarContainer + RoomControlsGroup |
+| `WeaponSystemUI.uxml` | WeaponPanel 컨테이너 |
+| `CrewSystemUI.uxml` | CrewPanel 컨테이너 |
+
+### USS (스타일)
+
+| 파일 | 주요 클래스 |
+|---|---|
+| `GameHUD.uss` | `.hud-overlay`, `.hud-top-row`, `.hud-left-column`, `.hud-health-scrap-row`, `.hud-shield-resource-row`, `.hud-spacer`, `.hud-bottom-row`, `.hud-bottom-center`, `.hud-bottom-right`(180px) |
+| `HullHealthUI.uss` | `.hull-health-panel`, `.hull-bar`, `.hull-bar-green/yellow/red`, `.scrap-panel`, `.scrap-icon` |
+| `PowerSystemUI.uss` | `.reactor-bar(.filled)`, `.room-bar`, `.room-button`, `.room-bar-container`(column-reverse) |
+| `WeaponSystemUI.uss` | `.weapon-slot`(140×60px), `.weapon-charge-fill(.ready/.unpowered)`, `.weapon-slot.off` |
+| `CrewSystemUI.uss` | `.crew-panel`, `.crew-slot(.selected/.dead)`, `.crew-portrait`(56×56), `.crew-info-column`, `.crew-health-fill(.danger)` |
+| `ShieldSystemUI.uss` | `.shield-panel`, `.shield-circles-row`, `.shield-circle(.active)`, `.shield-charge-fill` |
+| `GameMainUI.uss` | `.game-main-panel`, `.game-main-buttons-row`, `.jump-button`, `.game-main-button` |
+| `MapUI.uss` | `.map-overlay`, `.map-container`, `.node-button(.reachable/.current/:disabled)`, `.map-cancel-button`, `.pause-overlay`, `.pause-label`, `.pause-hint` |
+| `EventUI.uss` | `.event-overlay`, `.event-panel`, `.event-title`, `.event-dialog-text`, `.event-choices-container`, `.event-choice-button`, `.event-reward-container`, `.event-reward-entry`, `.event-accept-button` |
 
 ---
 
@@ -134,22 +239,28 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 
 ```
 1. DefaultSheepMaker (ContextMenu) → DefaultShipData.json 생성
-2. GameSessionManager.Awake() → SaveLoadManager.Load() → ShipSaveData
+2. GameSessionManager.Awake() → SaveLoadManager.Load<GameSaveData>() → ShipData + MapData
 3. ShipSetupManager.BeginSetup()
-   ├─ AssetCatalogManager로 Hull 프리팹 취득 → Instantiate
+   ├─ AssetCatalogManager → Hull 프리팹 Instantiate → SpaceShipView
    ├─ GridBuilder.Rebuild(savedData) → IShipAPI (SpaceShipManager)
+   │   └─ SetHullHealth(Max, Current) 포함
    ├─ SpaceShipView.Bind() → TileView/RoomView/DoorView 이벤트 구독
+   ├─ SpaceShipView.BindShield(shieldManager)
    ├─ SetupCrews() → CrewView.Bind()
-   ├─ SetupWeapons() → weaponLogic.SetBaseData(SO), WeaponView.Bind()
+   ├─ SetupWeapons() → WeaponView.Bind()
    ├─ WeaponManager.Initialize()
    ├─ PowerManager.Initialize()
-   ├─ SimulationCore.RegisterTickables(rooms, crews, doors, weapons, shipSim)
-   ├─ SimulationCore.RegisterTickables(shieldManager) ← ShieldRoom 있을 때만
-   ├─ SpaceShipView.BindShield(shieldManager)
+   ├─ ResourceManager.Initialize(Resources)
+   ├─ CombatManager 생성
+   ├─ SimulationCore.RegisterTickables(rooms, crews, doors, weapons, shipSim, shieldManager)
    ├─ UnityTimeProvider.Initialize(simCore)
    ├─ PowerSystemUIView.Initialize()
    ├─ WeaponSystemUIView.Initialize()
-   └─ CrewSystemUIView.Initialize(crewLogics, commandManager)
+   ├─ CrewSystemUIView.Initialize()
+   ├─ ShieldSystemUIView.Initialize()
+   ├─ GameMainUIView.Initialize(resourceManager, combatManager, pilotRoom, mapView)
+   ├─ HullHealthUIView.Initialize(shipAPI)
+   └─ MapView.Initialize(mapManager, mapData)
 4. UnityTimeProvider.Update() → SimulationCore.AdvanceTime(deltaTime)
    └─ 0.1초마다 ITickable.OnTickUpdate() 일괄 호출
 ```
@@ -171,112 +282,106 @@ Pilot, Oxygen, Empty, Engine, Weapon, Shield, Door, Vision, MedBay
 | 실드 충전 시간 | 75틱 = 7.5초/1개 (`ShieldManager.BASE_CHARGE_RATE = 1/75`) |
 | 실드 Manned 보너스 | 1.2x (`ShieldManager.MANNED_BONUS`) |
 | 실드 최대 수 | 전력 2당 1개 (최대 4개) |
+| 선체 최대 체력 | 20 (`ShipSaveData.MaxHullHealth`) |
+| 체력바 색상 임계값 | >66%=초록, >33%=노랑, ≤33%=빨강 |
 
 ---
 
-### GameSaveData 도입 — 최상위 세이브 데이터 통합
-- **신규 파일**:
-  - `Core/Data/Storage/GameSaveData.cs` — `ShipSaveData Ship` + `MapData Map` 보유. 최상위 직렬화 루트
-- **수정 파일**:
-  - `SaveLoadManager` — `Save<T>()` / `Load<T>()` 제네릭으로 교체 (ShipSaveData 전용 메서드 제거)
-  - `GameSessionManager` — `CurrentGameData`를 `GameSaveData`로 교체. `ShipData`, `MapData` 접근자 추가. `SetMapData()`, `SaveGame()` 추가. 세이브 없을 때 오류 대신 새 `GameSaveData()` 생성
-  - `ShipSetupManager` — `HandOverData()` → `GameSessionManager.Instance.ShipData` 로 변경
+## 현재 미구현 / TODO
 
-### 맵 시스템 스켈레톤 추가
-- **신규 파일**:
-  - `Core/Data/Map/NodeData.cs` — `NodeType` enum, 노드 위치(X,Y 0~1 정규화), 연결 ID 목록, IsVisited, EventID
-  - `Core/Data/Map/MapData.cs` — 전체 노드 목록, CurrentNodeID, 맵 크기, 컬럼 수
-  - `Core/Data/Map/MapEventBaseSO.cs` — `EventType` enum, `EventChoiceData` 중첩 클래스, ScriptableObject
-  - `Core/Interface/IMapLogic.cs` — CurrentNode, GetReachableNodes(), MoveToNode(), OnNodeChanged 이벤트
-  - `Logic/Map/MapManager.cs` — IMapLogic 구현체. Initialize(MapData), 이동 유효성 검사, 이벤트 발행
-  - `Logic/Map/MapGenerator.cs` — 컬럼 기반 절차적 맵 생성. PlaceNodes(컬럼별 랜덤 행), ConnectColumns(고립 방지)
-  - `Presentation/UI/MapView.cs` — UI Toolkit 기반. 노드 버튼 동적 생성, reachable/current CSS 클래스 토글
-- **향후 연결 포인트**:
-  - `MapSetupManager` (Presentation/System) 추가 예정 — ShipSetupManager 패턴으로 조립
-  - `MapScreen.uxml` / `MapScreen.uss` 추가 예정
-  - `MapView.GetAllNodes()` 구현 시 `Initialize(IMapLogic, MapData)` 시그니처 변경 또는 `IMapData` 인터페이스 고려
-
----
-
-### GameMainUI + 자원 시스템 + 맵 오버레이 추가
-- **신규 파일**:
-  - `Core/Data/SpaceShip/ResourceData.cs` — Fuel, Missiles, Drones int 필드 (Serializable)
-  - `Core/Interface/IResourceManager.cs` — 자원 조회/소비/추가 + 이벤트 인터페이스
-  - `Core/Interface/ICombatManager.cs` — IsInCombat, OnCombatStateChanged 인터페이스
-  - `Logic/System/ResourceManager.cs` — IResourceManager 순수 C# 구현체. Initialize(ResourceData)
-  - `Logic/System/CombatManager.cs` — ICombatManager 순수 C# 구현체. SetCombatState(bool)
-  - `Presentation/UI/GameMainUIView.cs` — UI Toolkit HUD. JUMP/업그레이드/설정 버튼 + FUEL/MSL/DRN 자원 표시. JUMP 조건: !IsInCombat && PilotRoom.IsManned && Fuel >= 1
-  - `Presentation/UI/Styles/GameMainUI.uss` — GameMain 패널 스타일 (자원 행 + 버튼 행)
-  - `Presentation/UI/Styles/MapUI.uss` — 맵 오버레이/컨테이너/노드/취소버튼 스타일
-- **수정 파일**:
-  - `ShipSaveData` — `ResourceData Resources` 필드 추가
-  - `DefaultSheepMaker` — 기본 자원값 설정 (Fuel=3, Missiles=8, Drones=2)
-  - `GameHUD.uxml` — GameMainPanel(상단 중앙) + MapOverlay(전체화면 모달) 추가. MapUI.uss 참조 추가
-  - `MapView.cs` — Initialize(IMapLogic, MapData) 시그니처 변경. Show()/Hide() 추가. GetAllNodes() 구현. reachable 외 SetEnabled(false). OnNodeJumped 이벤트 추가
-  - `ShipSetupManager` — ResourceManager/CombatManager 생성, 맵 생성(MapGenerator)/초기화(MapManager), MapView 초기화, GameMainUIView.Initialize() 호출
-
-**JUMP 흐름**: JUMP 클릭 → MapView.Show() → 노드 클릭 → MoveToNode() + OnNodeJumped 이벤트 → 연료 -1 → MapView.Hide()
-
----
-
-### 저장 기능 구현
-- **데이터 동기화 현황**: 대부분의 Logic 클래스(CrewLogic, WeaponLogic, BaseRoomLogic, ShieldManager, DoorLogic, TileLogic, MapManager)는 자신의 Data 객체를 직접 mutate → 별도 동기화 불필요. MapManager._mapData는 GameSessionManager.CurrentGameData.Map과 동일 객체 참조이므로 MoveToNode() 결과도 자동 반영.
-- **수정 파일**:
-  - `Logic/System/ResourceManager` — `Initialize()`에서 `_data` 참조 보관. TryConsume*/Add* 호출 시 `_data` 필드도 동기화 (기존에는 내부 int만 변경하고 원본 ResourceData는 건드리지 않아 저장 누락)
-  - `Presentation/UI/GameMainUIView` — `OnNodeJumped()`에서 연료 소비 후 `GameSessionManager.Instance.SaveGame()` 호출 (노드 점프 시 자동저장)
-  - `Presentation/System/UnityTimeProvider` — `Ctrl+S` 단축키로 수동저장 추가
-
----
-
-### 스페이스바 일시정지 기능 추가
-- **수정 파일**:
-  - `UnityTimeProvider` — `Input.GetKeyDown(KeyCode.Space)` 감지 → `_isPaused` 토글. 일시정지 중 `AdvanceTime()` 호출 중단. `UIDocument`에서 `PauseOverlay` 캐시 → `DisplayStyle.Flex/None` 전환
-  - `GameHUD.uxml` — `PauseOverlay` VisualElement 추가 (MapOverlay 형제, "PAUSED" + 재개 힌트 라벨)
-  - `MapUI.uss` — `.pause-overlay`, `.pause-label`, `.pause-hint` 스타일 추가 (display:none 초기값)
-
----
-
-## 현재 미구현 / TODO (git status 기준)
 - `WeaponView.Bind()` — 내용 비어있음
 - 승무원 WorkingState — 실제 버프 로직 없음 (주석 처리)
 - `SimulateOxygenDiffusion()` — 구현되어 있으나 주석 처리됨
 - 씬 전환 (`SceneManager.LoadScene`) — 주석 처리됨
 - 발사체 생성 로직 — `WeaponLogic.TryFire()` 내 주석으로 TODO
-- `ShieldView` — 실드 수·충전 게이지 시각화 미완 (0↔1 on/off만 구현)
+
 
 ---
 
 ## 변경 이력
 
+### 이벤트 UI & 적군 전투 시뮬레이션
+- `SimulationCore` — `UnregisterTickable(s)()` 추가. pending removal 패턴으로 틱 도중 안전 제거
+- `IEnemyCombatManager.cs` — **신규**. `EnemyShipAPI`, `StartCombat()`, `EndCombat()`
+- `EnemyCombatManager.cs` — **신규** (`Logic/Event/`). GridBuilder로 적군 Logic 조립, simCore 등록, 체력 체크 → `CompleteCombatSubEvent()` 자동 호출
+- `EventUI.uss` — **신규**. 반투명 파란 오버레이 스타일
+- `EventDialogUIManager.cs` — **신규** (`Presentation/UI/`). Dialog: 선택지 버튼 동적 생성. Reward: 보상 목록 + Accept 버튼. `OnEventFinished` 시 숨김
+- `GameHUD.uxml` — `EventOverlay` 추가 + `EventUI.uss` import
+- `ShipSetupManager` — `_simCore` 필드화, `EnemyCombatManager` 생성/구독, `EventDialogUIManager.Initialize()` 추가
+- `Plans/event-ui-and-combat-simulation.md` — 구현 계획 문서 저장
+
+### 이벤트 진행 상황 저장 & EventLogicManager
+- `SubEventBaseSO` — `SubEventID(string)` 필드 추가 (세이브/로드 및 DB 조회용 고유 ID)
+- `EventDatabaseSO` — `GetSubEvent(string subEventID)` 메서드 추가 (Dialog/Combat/Reward 목록 순차 탐색)
+- `EventSaveData.cs` — **신규**. `IsEventActive`, `ActiveEventID`, `ActiveSubEventID` 직렬화
+- `GameSaveData` — `EventSaveData Event` 필드 추가
+- `IEventLogic.cs` — **신규**. `StartEvent()`, `CompleteDialogSubEvent(int)`, `CompleteCombatSubEvent()`, `CompleteRewardSubEvent()`, `GetSaveData()`, `OnSubEventChanged`, `OnEventFinished`
+- `EventLogicManager.cs` — **신규** (`Logic/Event/`). `IEventLogic` 구현. `Initialize()` → 세이브 복원. `ApplyRewards()` → `IResourceManager` 위임 (MaxReactorPower/Weapon은 TODO)
+- `AssetCatalogManager` — `EventDatabaseSO EventDatabase` 필드 + `GetSubEvent(string)` 메서드 추가
+- `ShipSetupManager` — `EventLogicManager` 생성/초기화, `CombatManager` 연동 (OnSubEventChanged → SetCombatState)
+
+### 이벤트 에디터 윈도우 + 데이터베이스 SO
+- `Core/Data/Event/EventDatabaseSO.cs` — 에디터 전용 컨테이너 SO. 4종 목록 + Add/Remove
+- `Assets/Editor/EventEditorWindow.cs` — `Window/FTL/Event Editor` 메뉴. 탭(Event/Dialog/Combat/Reward)+리스트+CachedEditor 레이아웃
+  - Add: `Assets/Data/Events/{Type}/` 에 Asset 생성 후 DB 등록
+  - Delete: DB에서 제거 + Asset 파일 삭제
+  - DB 없을 때 "생성하기" 버튼으로 자동 생성
+
+### 이벤트 시스템 데이터 구조 신규
+- `Core/Data/Event/SubEventBaseSO.cs` — abstract SO 기반. `IsFinished` 공통 플래그
+- `Core/Data/Event/DialogSubEventSO.cs` — 대화+선택지. `List<DialogChoice>(ChoiceText, NextEvent)`
+- `Core/Data/Event/CombatSubEventSO.cs` — 적군 `ShipSaveData` + `NextEvent` 링크
+- `Core/Data/Event/RewardSubEventSO.cs` — `List<RewardEntry>(RewardType, Amount, WeaponID)` + `NextEvent`
+- `Core/Data/Event/EventSO.cs` — 최상위 이벤트. `EventID`, `Title`, `StartEvent`
+- `RewardType` enum — Scrap, Fuel, Missiles, Drones, Weapon, MaxReactorPower
+- `AssetCatalogManager` — `EventSOList` + `GetEvent(string)` 추가
+- `Assets/Editor/EventSOEditor.cs` — `[CustomEditor(EventSO)]` 체인 트리 시각화
+- `MapEventBaseSO.cs` — DEPRECATED (EventSO로 대체)
+
+### UI 개편 — 체력 바, 스크랩, 실드/리소스 레이아웃 재배치
+- `ShipSaveData` — `MaxHullHealth=20`, `CurrentHullHealth=20` 추가
+- `ResourceData` — `Scrap=0` 추가
+- `IResourceManager` — Scrap 프로퍼티, `OnScrapChanged`, `TryConsumeScrap()`, `AddScrap()` 추가
+- `IShipAPI` — `MaxHullHealth`, `CurrentHullHealth` 프로퍼티 추가
+- `SpaceShipManager` — hull health 프로퍼티 + `SetHullHealth()` 추가
+- `GridBuilder` — `Rebuild()` 내 `SetHullHealth()` 호출 추가
+- `HullHealthUIView.cs` — 신규. 바 개수=MaxHullHealth, 1바=1HP, 색상 자동 결정
+- `HullHealthUI.uss` — 신규
+- `GameHUD.uxml` — 좌측 컬럼 구조 재편(체력바+SCR / 실드+리소스 / 승무원). 버튼만 남긴 GameMainPanel
+- `GameHUD.uss` — `.hud-left-column`, `.hud-health-scrap-row`, `.hud-shield-resource-row` 추가
+- `GameMainUIView` — ScrapLabel 연동 추가
+
+### 스페이스바 일시정지 + Ctrl+S 수동저장
+- `UnityTimeProvider` — Space=일시정지 토글, Ctrl+S=저장. PauseOverlay DisplayStyle 전환
+- `GameHUD.uxml` — PauseOverlay 추가
+- `MapUI.uss` — `.pause-overlay`, `.pause-label`, `.pause-hint` 추가
+
+### GameMainUI + 자원 시스템 + 맵 오버레이
+- `ResourceData`, `IResourceManager`, `ResourceManager`, `CombatManager` 신규
+- `GameMainUIView`, `GameMainUI.uss`, `MapUI.uss` 신규
+- `MapView` — Show()/Hide(), OnNodeJumped 이벤트, 노드 이동 구현
+- `ShipSetupManager` — ResourceManager/CombatManager/MapManager/MapView/GameMainUIView 초기화 추가
+
+### 맵 시스템 스켈레톤
+- `NodeData`, `MapData`, `MapEventBaseSO` 신규
+- `IMapLogic`, `MapManager`, `MapGenerator` 신규
+- `GameSaveData` — ShipSaveData + MapData 통합 루트
+
+### 실드 시스템
+- `ShieldData`, `IShieldLogic`, `ShieldManager`, `ShieldView` 신규
+- `ShipSaveData` — Shield 필드 추가
+- `IShipAPI` — `GetShieldLogic()` 추가
+- `SpaceShipManager` — ShieldManager 보유 + SetShieldLogic()
+
+### 승무원 시스템 UI + 통합 GameHUD
+- `GameHUD.uxml`, `GameHUD.uss` 신규
+- `CrewSystemUIView` — crew-info-column 레이아웃
+- `CrewData` — CrewName 필드 추가
+- `LogicCommandManager.SelectCrew()` — clickedByUI 파라미터 추가
+
 ### 방 이동 타일 배정 로직 개선
-- **수정 파일**:
-  - `LogicCommandManager` — `SetAllCrews()`, `OrderMoveToRoom(IRoomLogic)` 추가. 방의 타일을 순서대로 검사해 비어 있는 첫 번째 타일로 배정. 방이 가득 차면 이동 불가
-  - `MouseInputManager` — 우클릭 시 `OrderMoveToRoom()` 호출로 변경 (기존 `tileCoords[0]` 하드코딩 제거)
-  - `ShipSetupManager` — `commandManager.SetAllCrews(shipAPI.GetAllCrews())` 호출 추가
+- `LogicCommandManager` — `SetAllCrews()`, `OrderMoveToRoom()` 추가. 빈 타일 순서 배정
+- `MouseInputManager` — 우클릭 시 `OrderMoveToRoom()` 호출
 
-### 실드 시스템 프레임워크 추가 (commit: c8cd749)
-- **신규 파일**:
-  - `Core/Data/SpaceShip/ShieldData.cs` — `ChargeGauge`, `CurrentShieldCount` 직렬화 데이터
-  - `Core/Interface/IShieldLogic.cs` — 실드 로직 인터페이스
-  - `Logic/System/ShieldManager.cs` — `IShieldLogic` + `ITickable`. 75틱/1실드 충전, Manned 1.2× 보너스, `TryAbsorbDamage()`
-  - `Presentation/Views/ShieldView.cs` — 실드 0↔1 경계에서 GameObject on/off
-  - `Assets/Sprite/ShieldImage.png` — 실드 스프라이트 이미지
-- **수정 파일**:
-  - `ShipSaveData` — `Shield = new ShieldData()` 필드 추가
-  - `IShipAPI` — `GetShieldLogic()` 메서드 추가
-  - `SpaceShipManager` — `_shieldLogic` 보유, `SetShieldLogic()` / `GetShieldLogic()` 구현
-  - `GridBuilder` — `RebuildShield()` 추가 (Shield 방 탐색 → `ShieldManager` 생성·초기화)
-  - `ShipSetupManager` — `shieldManager` 취득, `simCore`에 `ITickable`로 등록, `spaceShipView.BindShield()` 호출
-  - `SpaceShipView` — `SimulationCore` 프로퍼티, `BindShield(IShieldLogic)` 메서드 추가
-
-### 승무원 시스템 UI 추가 및 통합 GameHUD (commit: af006e3)
-- **신규 파일**:
-  - `Presentation/UI/UIDocuments/GameHUD.uxml` — 통합 HUD UXML. 승무원(상단 좌) + 전력(하단 좌) + 무기(하단 중앙)
-  - `Presentation/UI/Styles/GameHUD.uss` — HUD 레이아웃 전담 USS
-- **수정 파일**:
-  - `CrewSystemUIView` — 초상화+이름+체력바 세로 레이아웃(`crew-info-column`), 좌상단 배치
-  - `CrewSystemUI.uss` — `crew-info-column` 추가, hover/selected/dead 스타일 정비
-  - `CrewData` — `CrewName` 필드 추가
-  - `LogicCommandManager.SelectCrew()` — `clickedByUI` 파라미터 추가 → `OnCrewUIClicked` 이벤트로 UI·게임월드 클릭 충돌 방지
-  - `MouseInputManager` — `OnCrewUIClicked` 구독 → UI 클릭 시 인게임 클릭 무시
-  - `ShipSetupManager` — `SortRoomsForUI()` 추가 (Shield→Engine→Medical→Oxygen→Weapon 순, `MaxPowerCapacity=0` 방 제외), CrewSystemUIView 초기화 추가
+### GameSaveData 도입
+- `GameSaveData` 신규. `SaveLoadManager` 제네릭화. `GameSessionManager` GameSaveData로 교체

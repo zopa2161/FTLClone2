@@ -21,6 +21,7 @@ namespace Presentation.Views.UI
         private Label _fuelLabel;
         private Label _missilesLabel;
         private Label _dronesLabel;
+        private Label _scrapLabel;
 
         public void Initialize(IResourceManager resourceManager, ICombatManager combatManager,
                                IRoomLogic pilotRoom, Presentation.UI.MapView mapView)
@@ -37,11 +38,13 @@ namespace Presentation.Views.UI
             _fuelLabel      = root.Q<Label>("FuelLabel");
             _missilesLabel  = root.Q<Label>("MissilesLabel");
             _dronesLabel    = root.Q<Label>("DronesLabel");
+            _scrapLabel     = root.Q<Label>("ScrapLabel");
 
             _pilotRoom.OnMannedStatusChanged    += OnMannedStatusChanged;
             _resourceManager.OnFuelChanged      += OnFuelChanged;
             _resourceManager.OnMissilesChanged  += OnMissilesChanged;
             _resourceManager.OnDronesChanged    += OnDronesChanged;
+            _resourceManager.OnScrapChanged     += OnScrapChanged;
             _combatManager.OnCombatStateChanged += OnCombatStateChanged;
 
             if (_mapView != null)
@@ -64,12 +67,14 @@ namespace Presentation.Views.UI
 
         private void OnMissilesChanged(int missiles) => _missilesLabel.text = missiles.ToString();
         private void OnDronesChanged(int drones)     => _dronesLabel.text = drones.ToString();
+        private void OnScrapChanged(int scrap)       => _scrapLabel.text = scrap.ToString();
 
         private void RefreshResourceLabels()
         {
             _fuelLabel.text     = _resourceManager.Fuel.ToString();
             _missilesLabel.text = _resourceManager.Missiles.ToString();
             _dronesLabel.text   = _resourceManager.Drones.ToString();
+            _scrapLabel.text    = _resourceManager.Scrap.ToString();
         }
 
         private void RefreshJumpButton()
@@ -101,6 +106,7 @@ namespace Presentation.Views.UI
                 _resourceManager.OnFuelChanged     -= OnFuelChanged;
                 _resourceManager.OnMissilesChanged -= OnMissilesChanged;
                 _resourceManager.OnDronesChanged   -= OnDronesChanged;
+                _resourceManager.OnScrapChanged    -= OnScrapChanged;
             }
             if (_combatManager != null)
                 _combatManager.OnCombatStateChanged -= OnCombatStateChanged;

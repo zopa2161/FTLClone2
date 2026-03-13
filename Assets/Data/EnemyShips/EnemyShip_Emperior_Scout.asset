@@ -1,0 +1,365 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 834a9b6ae00d3584ab830e16e7889044, type: 3}
+  m_Name: EnemyShip_Emperior_Scout
+  m_EditorClassIdentifier: Core::Core.Data.Event.EnemyShipSO
+  Title: Emperior_Scout
+  ShipData:
+    Version: 1.0.0
+    ShipHullID: Emperior_Scout
+    MaxReactorPower: 8
+    MaxHullHealth: 8
+    CurrentHullHealth: 8
+    Shield:
+      ChargeGauge: 0
+      CurrentShieldCount: 1
+    Resources:
+      Fuel: 99
+      Missiles: 99
+      Drones: 99
+      Scrap: 99
+    MaxWeaponSlots: 2
+    EquippedWeapons:
+    - WeaponID: 
+      IsPowered: 0
+      CurrentChargeTimer: 0
+      IsAutoFire: 0
+      TargetRoomID: 0
+    Tiles:
+    - X: 0
+      Y: 0
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 1
+        Y: 0
+      - X: 0
+        Y: 1
+    - X: 1
+      Y: 0
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 0
+        Y: 0
+      - X: 1
+        Y: 1
+    - X: 2
+      Y: 0
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 2
+        Y: 1
+    - X: 3
+      Y: 0
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 3
+        Y: 1
+      - X: 4
+        Y: 0
+    - X: 4
+      Y: 0
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 3
+        Y: 0
+      - X: 4
+        Y: 1
+    - X: 0
+      Y: 1
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 0
+        Y: 0
+      - X: 1
+        Y: 1
+    - X: 1
+      Y: 1
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 0
+        Y: 1
+      - X: 1
+        Y: 0
+    - X: 2
+      Y: 1
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 2
+        Y: 0
+    - X: 3
+      Y: 1
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 4
+        Y: 1
+      - X: 3
+        Y: 0
+    - X: 4
+      Y: 1
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 3
+        Y: 1
+      - X: 4
+        Y: 0
+    - X: 1
+      Y: 2
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 1
+        Y: 3
+    - X: 3
+      Y: 2
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 3
+        Y: 3
+    - X: 1
+      Y: 3
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 1
+        Y: 2
+    - X: 2
+      Y: 3
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 2
+        Y: 4
+    - X: 3
+      Y: 3
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 3
+        Y: 3
+    - X: 2
+      Y: 4
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 2
+        Y: 3
+    - X: 2
+      Y: 5
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 2
+        Y: 6
+    - X: 2
+      Y: 6
+      OxygenLevel: 100
+      BreachLevel: 0
+      ConnectedNeighborCoords:
+      - X: 2
+        Y: 5
+    - X: 4
+      Y: 3
+      OxygenLevel: 100
+      BreachLevel: 100
+      ConnectedNeighborCoords: []
+    Rooms:
+    - RoomID: 0
+      RoomType: Pilot
+      MaxPower: 1
+      CurrentAllocatedPower: 1
+      CurrentAllocateToWeapon: 0
+      ISManned: 0
+      DestructionLevel: 0
+      IsMannable: 0
+      ConsoleDirection: 1
+      TileCoords:
+      - X: 2
+        Y: 5
+      - X: 2
+        Y: 6
+    - RoomID: 1
+      RoomType: Empty
+      MaxPower: 0
+      CurrentAllocatedPower: 0
+      CurrentAllocateToWeapon: 0
+      ISManned: 0
+      DestructionLevel: 0
+      IsMannable: 0
+      ConsoleDirection: 0
+      TileCoords:
+      - X: 2
+        Y: 4
+      - X: 2
+        Y: 3
+    - RoomID: 2
+      RoomType: Empty
+      MaxPower: 0
+      CurrentAllocatedPower: 0
+      CurrentAllocateToWeapon: 0
+      ISManned: 0
+      DestructionLevel: 0
+      IsMannable: 0
+      ConsoleDirection: 0
+      TileCoords:
+      - X: 1
+        Y: 3
+      - X: 1
+        Y: 2
+    - RoomID: 3
+      RoomType: Oxygen
+      MaxPower: 1
+      CurrentAllocatedPower: 1
+      CurrentAllocateToWeapon: 0
+      ISManned: 0
+      DestructionLevel: 0
+      IsMannable: 0
+      ConsoleDirection: 0
+      TileCoords:
+      - X: 3
+        Y: 3
+      - X: 3
+        Y: 2
+    - RoomID: 4
+      RoomType: Weapon
+      MaxPower: 4
+      CurrentAllocatedPower: 4
+      CurrentAllocateToWeapon: 2
+      ISManned: 0
+      DestructionLevel: 0
+      IsMannable: 0
+      ConsoleDirection: 3
+      TileCoords:
+      - X: 0
+        Y: 1
+      - X: 1
+        Y: 1
+      - X: 0
+        Y: 0
+      - X: 1
+        Y: 0
+    - RoomID: 5
+      RoomType: Engine
+      MaxPower: 1
+      CurrentAllocatedPower: 1
+      CurrentAllocateToWeapon: 0
+      ISManned: 0
+      DestructionLevel: 0
+      IsMannable: 0
+      ConsoleDirection: 2
+      TileCoords:
+      - X: 2
+        Y: 1
+      - X: 2
+        Y: 1
+    - RoomID: 6
+      RoomType: Shield
+      MaxPower: 2
+      CurrentAllocatedPower: 2
+      CurrentAllocateToWeapon: 0
+      ISManned: 0
+      DestructionLevel: 0
+      IsMannable: 0
+      ConsoleDirection: 3
+      TileCoords:
+      - X: 4
+        Y: 1
+      - X: 3
+        Y: 1
+      - X: 3
+        Y: 0
+      - X: 4
+        Y: 0
+    Doors:
+    - DoorID: 0
+      IsOpen: 0
+      IsForcedOpen: 0
+      TileA:
+        X: 2
+        Y: 5
+      TileB:
+        X: 2
+        Y: 4
+    - DoorID: 1
+      IsOpen: 0
+      IsForcedOpen: 0
+      TileA:
+        X: 1
+        Y: 3
+      TileB:
+        X: 2
+        Y: 3
+    - DoorID: 2
+      IsOpen: 0
+      IsForcedOpen: 0
+      TileA:
+        X: 2
+        Y: 3
+      TileB:
+        X: 3
+        Y: 3
+    - DoorID: 3
+      IsOpen: 0
+      IsForcedOpen: 0
+      TileA:
+        X: 3
+        Y: 3
+      TileB:
+        X: 4
+        Y: 3
+    - DoorID: 4
+      IsOpen: 0
+      IsForcedOpen: 0
+      TileA:
+        X: 1
+        Y: 2
+      TileB:
+        X: 1
+        Y: 1
+    - DoorID: 5
+      IsOpen: 0
+      IsForcedOpen: 0
+      TileA:
+        X: 3
+        Y: 2
+      TileB:
+        X: 3
+        Y: 1
+    - DoorID: 6
+      IsOpen: 0
+      IsForcedOpen: 0
+      TileA:
+        X: 1
+        Y: 1
+      TileB:
+        X: 2
+        Y: 1
+    - DoorID: 7
+      IsOpen: 0
+      IsForcedOpen: 0
+      TileA:
+        X: 2
+        Y: 0
+      TileB:
+        X: 3
+        Y: 0
+    Crews: []

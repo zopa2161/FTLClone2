@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Core.enums;
 using Logic.System;
 using Presentation.Views;
 using UnityEngine;
@@ -13,6 +14,7 @@ namespace Presentation.System
         public LayerMask RoomLayer;
 
         private LogicCommandManager _commandManager;
+        private WeaponManager _weaponManager;
         private RoomView _currentHoveredRoom;
         private CrewView _currentSelectedView;
         private bool _clickCrewUI;
@@ -20,8 +22,16 @@ namespace Presentation.System
         // 등록된 모든 CrewView (CrewID → CrewView)
         private readonly Dictionary<int, CrewView> _crewViewMap = new();
 
+        // 무기별 현재 타겟 RoomView (weaponIndex → RoomView)
+        private readonly Dictionary<int, RoomView> _targetedRoomViewByWeapon = new();
+
         // ShipSetupManager가 CommandManager를 공유받기 위한 프로퍼티
         public LogicCommandManager CommandManager => _commandManager;
+
+        public void InitializeWeaponManager(WeaponManager weaponManager)
+        {
+            _weaponManager = weaponManager;
+        }
 
         private void Update()
         {
@@ -87,13 +97,25 @@ namespace Presentation.System
                 return;
             }
 
-            if (EventSystem.current.IsPointerOverGameObject()) 
+            if (EventSystem.current.IsPointerOverGameObject())
             {
                 _commandManager.DeselectCrew();
                 return; // UI 위라면 인게임 클릭 판정을 즉시 취소!
             }
 
-    
+            // 적군 방 타겟 설정: 무기가 선택된 상태에서 적군 방 클릭
+            if (_weaponManager != null && _weaponManager.HasSelectedWeapon)
+            {
+                var hitRoom = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, RoomLayer);
+                if (hitRoom.collider != null)
+                {
+                    var clickedRoom = hitRoom.collider.GetComponent<RoomView>();
+                    if (clickedRoom != null && clickedRoom.Logic != null && clickedRoom.Faction == Faction.Enemy)
+                    {
+                        SetWeaponTarget(_weaponManager.SelectedWeaponIndex, clickedRoom);
+                    }
+                }
+            }
         }
 
         private void HandleRightClick()
@@ -156,7 +178,10 @@ namespace Presentation.System
 
         private void HandleHover()
         {
-            if (!_commandManager.HasSelectedCrew)
+            bool crewSelected = _commandManager.HasSelectedCrew;
+            bool weaponSelected = _weaponManager != null && _weaponManager.HasSelectedWeapon;
+
+            if (!crewSelected && !weaponSelected)
             {
                 ClearHoverState();
                 return;
@@ -168,11 +193,19 @@ namespace Presentation.System
             if (hit.collider != null)
             {
                 var hoveredRoom = hit.collider.GetComponent<RoomView>();
-                if (hoveredRoom != null && hoveredRoom != _currentHoveredRoom)
+                // 승무원 선택 시: 아군 방 하이라이트 / 무기 선택 시: 적군 방 하이라이트
+                bool shouldHighlight = (crewSelected && hoveredRoom != null && hoveredRoom.Faction == Faction.Player)
+                                    || (weaponSelected && hoveredRoom != null && hoveredRoom.Faction == Faction.Enemy);
+
+                if (shouldHighlight && hoveredRoom != _currentHoveredRoom)
                 {
                     ClearHoverState();
                     _currentHoveredRoom = hoveredRoom;
                     _currentHoveredRoom.SetHighlight(true);
+                }
+                else if (!shouldHighlight)
+                {
+                    ClearHoverState();
                 }
             }
             else
@@ -185,6 +218,19 @@ namespace Presentation.System
         {
             Debug.Log("작동");
             _clickCrewUI = true;
+        }
+
+        private void SetWeaponTarget(int weaponIndex, RoomView newTarget)
+        {
+            // 이전 타겟 해제
+            if (_targetedRoomViewByWeapon.TryGetValue(weaponIndex, out var prevRoom))
+                prevRoom.SetTargeted(false);
+
+            _targetedRoomViewByWeapon[weaponIndex] = newTarget;
+            newTarget.SetTargeted(true);
+
+            _weaponManager.SetTargetForSelectedWeapon(newTarget.Logic.Data.RoomID);
+            Debug.Log($"[MouseInputManager] 무기[{weaponIndex}] 타겟 → Enemy Room {newTarget.Logic.Data.RoomID}");
         }
 
         private void ClearHoverState()

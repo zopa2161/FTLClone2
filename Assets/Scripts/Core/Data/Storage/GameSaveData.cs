@@ -1,4 +1,5 @@
 using System;
+using Core.Data.Event;
 using Core.Data.Map;
 using Core.Data.SpaceShip;
 
@@ -20,5 +21,8 @@ namespace Core.Data.Storage
         /// MapSetupManager.BeginSetup()에서 null 여부를 확인합니다.
         /// </summary>
         public MapData Map;
+
+        /// <summary>현재 진행 중인 이벤트 상태. 세이브/로드 시 이벤트 진행 상황 유지에 사용됩니다.</summary>
+        public EventSaveData Event = new EventSaveData();
     }
 }

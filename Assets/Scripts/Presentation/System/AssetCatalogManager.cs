@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Core.Data.Crews;
+using Core.Data.Event;
 using Core.Data.Storage;
 using Core.Data.Weapon;
 using UnityEngine;
@@ -14,11 +15,17 @@ namespace Presentation.System
 
         [Header("무기 SO 데이터 카탈로그")] public List<WeaponSOEntry> WeaponSOList;
 
+        [Header("이벤트 SO 카탈로그")] public List<EventSO> EventSOList;
+
+        [Header("이벤트 데이터베이스 SO")] public EventDatabaseSO EventDatabase;
+
         private Dictionary<string, CrewBaseSO> _crewSODict;
 
         private Dictionary<string, GameObject> _shipHullDict;
 
         private Dictionary<string, WeaponBaseSO> _weaponSO;
+
+        private Dictionary<string, EventSO> _eventSODict;
 
         protected override void Awake()
         {
@@ -50,7 +57,16 @@ namespace Presentation.System
                     _weaponSO.Add(entry.WeaponID, entry.WeaponBaseSo);
                 else
                     Debug.LogWarning($"[AssetCatalog] 중복된 무기 ID 발견: {entry.WeaponID}");
-        
+
+            _eventSODict = new Dictionary<string, EventSO>();
+            foreach (var ev in EventSOList)
+                if (ev != null && !string.IsNullOrEmpty(ev.EventID))
+                {
+                    if (!_eventSODict.ContainsKey(ev.EventID))
+                        _eventSODict.Add(ev.EventID, ev);
+                    else
+                        Debug.LogWarning($"[AssetCatalog] 중복된 이벤트 ID 발견: {ev.EventID}");
+                }
         }
 
         public GameObject GetShipHullPrefab(string hullID)
@@ -73,9 +89,28 @@ namespace Presentation.System
         public WeaponBaseSO GetWeaponBaseData(string weaponDataID)
         {
             if (_weaponSO.TryGetValue(weaponDataID, out var so)) return so;
-            
+
             Debug.LogError($"[AssetCatalog] 창고에 '{weaponDataID}' 무기 데이터가 없습니다!");
             return null;
+        }
+
+        public EventSO GetEvent(string eventID)
+        {
+            if (_eventSODict.TryGetValue(eventID, out var ev)) return ev;
+
+            Debug.LogWarning($"[AssetCatalog] 창고에 '{eventID}' 이벤트가 없습니다!");
+            return null;
+        }
+
+        /// <summary>SubEventID로 서브이벤트 SO를 조회합니다. EventDatabase가 없으면 null을 반환합니다.</summary>
+        public SubEventBaseSO GetSubEvent(string subEventID)
+        {
+            if (EventDatabase == null)
+            {
+                Debug.LogWarning("[AssetCatalog] EventDatabase가 할당되지 않았습니다!");
+                return null;
+            }
+            return EventDatabase.GetSubEvent(subEventID);
         }
     }
 }

@@ -9,10 +9,12 @@ namespace Logic.System
         public int Fuel { get; private set; }
         public int Missiles { get; private set; }
         public int Drones { get; private set; }
+        public int Scrap { get; private set; }
 
         public event Action<int> OnFuelChanged;
         public event Action<int> OnMissilesChanged;
         public event Action<int> OnDronesChanged;
+        public event Action<int> OnScrapChanged;
 
         private ResourceData _data;
 
@@ -22,6 +24,7 @@ namespace Logic.System
             Fuel = data.Fuel;
             Missiles = data.Missiles;
             Drones = data.Drones;
+            Scrap = data.Scrap;
         }
 
         public bool TryConsumeFuel(int amount)
@@ -54,5 +57,16 @@ namespace Logic.System
         public void AddFuel(int amount)     { Fuel += amount;     _data.Fuel = Fuel;         OnFuelChanged?.Invoke(Fuel); }
         public void AddMissiles(int amount) { Missiles += amount; _data.Missiles = Missiles; OnMissilesChanged?.Invoke(Missiles); }
         public void AddDrones(int amount)   { Drones += amount;   _data.Drones = Drones;     OnDronesChanged?.Invoke(Drones); }
+
+        public bool TryConsumeScrap(int amount)
+        {
+            if (Scrap < amount) return false;
+            Scrap -= amount;
+            _data.Scrap = Scrap;
+            OnScrapChanged?.Invoke(Scrap);
+            return true;
+        }
+
+        public void AddScrap(int amount) { Scrap += amount; _data.Scrap = Scrap; OnScrapChanged?.Invoke(Scrap); }
     }
 }

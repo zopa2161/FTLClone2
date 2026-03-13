@@ -23,6 +23,7 @@ namespace Logic.SpaceShip
             RebuildCrews(saveData.Crews);
             RebuildWeapons(saveData.EquippedWeapons);
             _spaceShipManager.SetShieldLogic(saveData.Shield);
+            _spaceShipManager.SetHullHealth(saveData.MaxHullHealth, saveData.CurrentHullHealth);
 
             return _spaceShipManager;
         }

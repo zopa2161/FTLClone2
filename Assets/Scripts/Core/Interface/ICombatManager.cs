@@ -6,5 +6,6 @@ namespace Core.Interface
     {
         bool IsInCombat { get; }
         event Action<bool> OnCombatStateChanged;
+        void SetCombatState(bool isInCombat);
     }
 }

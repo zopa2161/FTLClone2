@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Core.Interface;
 using UnityEngine;
@@ -12,6 +13,11 @@ namespace Logic.System
 
         // 외부에서 장착된 무기 목록을 볼 수 있게 열어둠
         public IReadOnlyList<IWeaponLogic> Weapons => _weapons;
+
+        // 무기 선택 상태 (-1 = 선택 없음)
+        public int SelectedWeaponIndex { get; private set; } = -1;
+        public bool HasSelectedWeapon => SelectedWeaponIndex >= 0;
+        public event Action<int> OnWeaponSelectionChanged;
 
         private IRoomLogic _weaponRoom;
 
@@ -119,6 +125,34 @@ namespace Logic.System
         {
             if (index >= 0 && index < _weapons.Count) return _weapons[index];
             return null;
+        }
+
+        // ==========================================
+        // 🎯 무기 선택 / 타겟 설정
+        // ==========================================
+        public void SelectWeapon(int index)
+        {
+            if (SelectedWeaponIndex == index)
+            {
+                DeselectWeapon();
+                return;
+            }
+            SelectedWeaponIndex = index;
+            OnWeaponSelectionChanged?.Invoke(index);
+        }
+
+        public void DeselectWeapon()
+        {
+            SelectedWeaponIndex = -1;
+            OnWeaponSelectionChanged?.Invoke(-1);
+        }
+
+        public void SetTargetForSelectedWeapon(int roomID)
+        {
+            if (!HasSelectedWeapon) return;
+            var weapon = GetWeapon(SelectedWeaponIndex);
+            weapon?.SetTarget(roomID);
+            Debug.Log($"[WeaponManager] 무기[{SelectedWeaponIndex}] 타겟 Room {roomID} 설정됨.");
         }
     }
 }

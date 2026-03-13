@@ -18,6 +18,9 @@ namespace Logic.SpaceShip
         private List<IWeaponLogic> _weapons = new List<IWeaponLogic>();
         private IShieldLogic _shieldLogic;
 
+        public int MaxHullHealth { get; private set; }
+        public int CurrentHullHealth { get; private set; }
+
         //===인터페이스 함수===
 
         public IReadOnlyList<ITileLogic> GetAllTiles()
@@ -141,6 +144,12 @@ namespace Logic.SpaceShip
         public void SetWeapons(List<IWeaponLogic> weapons)
         {
             _weapons = weapons;
+        }
+
+        public void SetHullHealth(int maxHealth, int currentHealth)
+        {
+            MaxHullHealth = maxHealth;
+            CurrentHullHealth = currentHealth;
         }
 
         public void SetShieldLogic(ShieldData shieldData)

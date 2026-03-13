@@ -2,7 +2,9 @@
 using System.ComponentModel;
 using System.Linq;
 using Core.Data.SpaceShip;
+using Core.enums;
 using Core.Interface;
+using Logic.Event;
 using Logic.SpaceShip;
 using Logic.Map;
 using Logic.System;
@@ -17,6 +19,10 @@ namespace Presentation.System
     {
         [Header("임시 프리팹 (나중엔 창고에서 관리)")] public GameObject defaultCrewPrefab; // 승무원 기본 프리팹
         [Header(("무기 프리팹"))] public GameObject defaultWeaponPrefab;
+
+        private SimulationCore _simCore;
+        private GameObject _enemyShipObj;
+
         private void Start()
         {
             // 씬이 켜지자마자 조립 시작!
@@ -63,10 +69,10 @@ namespace Presentation.System
             // 5. 시뮬레이션 운영팀에게 권한 양도 및 Ticker(시계) 시작
             // SimulationManager.Instance.StartSimulation(_activeCrewLogics, gridAPI);
 
-            var simCore = new SimulationCore();
-            simCore.RegisterTickables(shipAPI.GetAllRooms() as IEnumerable<ITickable>);
-            simCore.RegisterTickables(shipAPI.GetAllCrews() as IEnumerable<ITickable>);
-            simCore.RegisterTickables(shipAPI.GetAllDoors() as IEnumerable<ITickable>);
+            _simCore = new SimulationCore();
+            _simCore.RegisterTickables(shipAPI.GetAllRooms() as IEnumerable<ITickable>);
+            _simCore.RegisterTickables(shipAPI.GetAllCrews() as IEnumerable<ITickable>);
+            _simCore.RegisterTickables(shipAPI.GetAllDoors() as IEnumerable<ITickable>);
             //무기는 장착 상태가 아닐 수도 있으니까 일단 이렇게 함
             if (shipAPI.GetAllWeapons() != null)
             {
@@ -75,26 +81,27 @@ namespace Presentation.System
                 {
                     iTickList.Add(weapon as ITickable);
                 }
-                
-                simCore.RegisterTickables(iTickList);
+
+                _simCore.RegisterTickables(iTickList);
             }
             var shipSimulationManager = new ShipSimulationManager(shipAPI as SpaceShipManager);
-            simCore.RegisterTickables(shipSimulationManager);
+            _simCore.RegisterTickables(shipSimulationManager);
 
             // 실드 매니저 등록 (ShieldRoom이 없는 경우 null일 수 있음)
             if (shieldManager is ITickable shieldTick)
-                simCore.RegisterTickables(shieldTick);
+                _simCore.RegisterTickables(shieldTick);
 
             var timeProvider = FindObjectOfType<UnityTimeProvider>();
-            timeProvider.Initialize(simCore);
+            timeProvider.Initialize(_simCore);
 
-            spaceShipView.SimulationCore = simCore;
+            spaceShipView.SimulationCore = _simCore;
             spaceShipView.BindShield(shieldManager);
 
             // 6. 입력 매니저 초기화
             var inputManager = FindObjectOfType<MouseInputManager>();
             inputManager.Initialize();
             inputManager.RegisterCrewViews(crewViews);
+            inputManager.InitializeWeaponManager(weaponManager);
             var commandManager = inputManager.CommandManager;
             commandManager.SetAllCrews(shipAPI.GetAllCrews());
 
@@ -134,6 +141,27 @@ namespace Presentation.System
 
             var combatManager = new CombatManager();
 
+            // 이벤트 로직 매니저 초기화 (CombatManager를 직접 주입 — 전투 상태 전환은 Logic 내부에서 처리)
+            var eventLogicManager = new EventLogicManager(resourceManager, combatManager);
+            eventLogicManager.Initialize(
+                GameSessionManager.Instance.CurrentGameData.Event,
+                AssetCatalogManager.Instance.GetEvent,
+                AssetCatalogManager.Instance.GetSubEvent
+            );
+
+            // 적군 전투 매니저 — CombatSubEvent 시작 시 적군 Logic 조립 + View 생성
+            var enemyCombatManager = new EnemyCombatManager(eventLogicManager, _simCore);
+            eventLogicManager.OnSubEventChanged += subEvent =>
+            {
+                Debug.Log("여기선 반응?");
+                if (subEvent is Core.Data.Event.CombatSubEventSO combat)
+                {
+                    enemyCombatManager.StartCombat(combat);
+                    SetupEnemyShipView(enemyCombatManager.EnemyShipAPI, combat.EnemyShip.ShipData);
+                }
+            };
+            enemyCombatManager.OnCombatEnded += TeardownEnemyShipView;
+
             // 맵 생성/로드
             // JsonUtility는 null 클래스 필드를 빈 객체로 직렬화/역직렬화하므로
             // null 체크 대신 Nodes.Count로 유효성을 판별합니다.
@@ -141,11 +169,22 @@ namespace Presentation.System
             if (mapData == null || mapData.Nodes.Count == 0)
             {
                 var mapGen = new MapGenerator();
-                mapData = mapGen.GenerateMap(columns: 7, maxRowsPerColumn: 3, mapWidth: 1f, mapHeight: 1f);
+                var eventIDs = AssetCatalogManager.Instance.EventSOList.Select(e => e.EventID).ToList();
+                mapData = mapGen.GenerateMap(columns: 7, maxRowsPerColumn: 4, mapWidth: 1f, mapHeight: 1f, eventIDs: eventIDs);
                 GameSessionManager.Instance.SetMapData(mapData);
             }
             var mapManager = new MapManager();
             mapManager.Initialize(mapData);
+            mapManager.OnNodeChanged += node =>
+            {
+   
+                if (!string.IsNullOrEmpty(node.EventID))
+                {
+                    Debug.Log("노드이동 반응");
+                    eventLogicManager.StartEvent(AssetCatalogManager.Instance.GetEvent(node.EventID));
+                }
+                    
+            };
 
             var mapView = FindFirstObjectByType<MapView>();
             if (mapView != null)
@@ -156,6 +195,14 @@ namespace Presentation.System
             var gameMainUI = FindObjectOfType<GameMainUIView>();
             if (gameMainUI != null && pilotRoom != null)
                 gameMainUI.Initialize(resourceManager, combatManager, pilotRoom, mapView);
+
+            var hullHealthUI = FindObjectOfType<HullHealthUIView>();
+            if (hullHealthUI != null)
+                hullHealthUI.Initialize(shipAPI);
+
+            var eventDialogUI = FindObjectOfType<EventDialogUIManager>();
+            if (eventDialogUI != null)
+                eventDialogUI.Initialize(eventLogicManager);
 
             Debug.Log("🚀 우주선 셋업 및 바인딩 완벽하게 종료!");
         }
@@ -187,6 +234,41 @@ namespace Presentation.System
                 
                 var weaponView = weaponObj.GetComponent<WeaponView>();
                 weaponView.Bind(weaponSO, weaponLogic, spaceShipView);
+            }
+        }
+
+        private void SetupEnemyShipView(IShipAPI enemyAPI, ShipSaveData saveData)
+        {
+            if (enemyAPI == null || saveData == null) return;
+
+            var hullPrefab = AssetCatalogManager.Instance.GetShipHullPrefab(saveData.ShipHullID);
+            if (hullPrefab == null)
+            {
+                Debug.LogWarning($"[ShipSetupManager] 적군 Hull 프리팹 없음: {saveData.ShipHullID}");
+                return;
+            }
+
+            // 적군 우주선은 화면 우측에 배치 (추후 위치 조정 가능)
+            _enemyShipObj = Instantiate(hullPrefab, new Vector3(10f, 0f, 0f), Quaternion.identity);
+            var enemyShipView = _enemyShipObj.GetComponent<SpaceShipView>();
+            if (enemyShipView == null) return;
+
+            enemyShipView.Bind(enemyAPI, enemyAPI.GetAllTiles(), enemyAPI.GetAllRooms(), enemyAPI.GetAllDoors());
+
+            // 모든 RoomView에 적군 Faction 지정
+            foreach (var roomView in enemyShipView.RoomViews)
+                roomView.SetFaction(Faction.Enemy);
+
+            Debug.Log("[ShipSetupManager] 적군 SpaceShipView 생성 완료.");
+        }
+
+        private void TeardownEnemyShipView()
+        {
+            if (_enemyShipObj != null)
+            {
+                Destroy(_enemyShipObj);
+                _enemyShipObj = null;
+                Debug.Log("[ShipSetupManager] 적군 SpaceShipView 제거 완료.");
             }
         }
 

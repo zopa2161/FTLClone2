@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Codice.Client.Common.TreeGrouper;
 using Core.Data.Map;
 using UnityEngine;
 using Random = System.Random;
@@ -23,7 +24,8 @@ namespace Logic.Map
         /// <param name="maxRowsPerColumn">컬럼당 최대 노드 수 (1~3 권장)</param>
         /// <param name="mapWidth">맵 가로 크기 (UI 단위)</param>
         /// <param name="mapHeight">맵 세로 크기 (UI 단위)</param>
-        public MapData GenerateMap(int columns, int maxRowsPerColumn, float mapWidth, float mapHeight)
+        public MapData GenerateMap(int columns, int maxRowsPerColumn, float mapWidth, float mapHeight,
+            IReadOnlyList<string> eventIDs = null)
         {
             UnityEngine.Debug.Log("맵 생성로직");
             var mapData = new MapData
@@ -56,6 +58,10 @@ namespace Logic.Map
                     node.Type = NodeType.Exit;
             }
 
+            // 이벤트 주입
+            if (eventIDs != null && eventIDs.Count > 0)
+                AssignEvents(columnGroups, eventIDs);
+
             return mapData;
         }
 
@@ -68,7 +74,7 @@ namespace Logic.Map
 
             for (int col = 0; col < columns; col++)
             {
-                int rowCount = _random.Next(1, maxRowsPerColumn + 1);
+                int rowCount = _random.Next(2, maxRowsPerColumn + 1);
                 var colNodes = new List<NodeData>();
 
                 // 컬럼 X 위치: 0 ~ 1 정규화
@@ -126,6 +132,17 @@ namespace Logic.Map
                     }
                 }
             }
+        }
+
+        /// <summary>Start·Exit 컬럼을 제외한 Normal 노드에 이벤트 ID를 무작위로 배정합니다.</summary>
+        private void AssignEvents(List<List<NodeData>> columnGroups, IReadOnlyList<string> eventIDs)
+        {
+            for (int c = 1; c < columnGroups.Count - 1; c++)
+                foreach (var node in columnGroups[c])
+                {
+                    node.EventID = eventIDs[_random.Next(eventIDs.Count)];
+                }
+                    
         }
 
         /// <summary>고유 NodeID 문자열을 생성합니다. 예: "node_col2_row0"</summary>

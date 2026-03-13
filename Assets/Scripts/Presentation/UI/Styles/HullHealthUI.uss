@@ -1,0 +1,58 @@
+/* ── 선체 체력 바 패널 ───────────────────────────────────────── */
+
+.hull-health-panel {
+    flex-direction: row;
+    align-items: center;
+    padding: 4px 6px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-color: rgba(255, 255, 255, 0.6);
+    border-width: 2px;
+    border-radius: 3px;
+}
+
+/* 개별 체력 바 */
+.hull-bar {
+    width: 8px;
+    height: 14px;
+    margin-left: 1px;
+    margin-right: 1px;
+    background-color: rgba(60, 60, 60, 1);
+    border-radius: 2px;
+}
+
+/* 체력 66% 초과: 초록 */
+.hull-bar-green {
+    background-color: rgb(80, 200, 80);
+}
+
+/* 체력 33% 초과 66% 이하: 노랑 */
+.hull-bar-yellow {
+    background-color: rgb(220, 180, 0);
+}
+
+/* 체력 33% 이하: 빨강 */
+.hull-bar-red {
+    background-color: rgb(200, 60, 60);
+}
+
+/* ── 스크랩 패널 ─────────────────────────────────────────────── */
+
+.scrap-panel {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    margin-left: 4px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-color: rgba(255, 255, 255, 0.6);
+    border-width: 2px;
+    border-radius: 3px;
+    min-width: 40px;
+}
+
+.scrap-icon {
+    font-size: 9px;
+    color: rgb(200, 200, 200);
+    -unity-font-style: bold;
+    margin-bottom: 1px;
+}

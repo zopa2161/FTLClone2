@@ -49,3 +49,21 @@
     flex-grow: 0;
     width: 180px;   /* power-panel-container 실제 너비에 맞게 조정 */
 }
+
+/* ── 좌측 컬럼: 체력바+스크랩 / 실드+리소스 / 승무원 ───────── */
+.hud-left-column {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* 체력 바와 스크랩을 가로로 나열 */
+.hud-health-scrap-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+/* 실드와 리소스를 가로로 나열 */
+.hud-shield-resource-row {
+    flex-direction: row;
+    align-items: center;
+}

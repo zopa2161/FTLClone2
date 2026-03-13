@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a815f30e43365142bc4287d2921c637, type: 3}
+  m_Name: Dialog_Emporior_Scout
+  m_EditorClassIdentifier: Core::Core.Data.Event.DialogSubEventSO
+  SubEventID: Emporior_Scout_Dialog
+  Title: Emporior_Scout
+  IsFinished: 0
+  DialogText: "\uC81C\uAD6D\uC758 \uC815\uCC30\uAE30\uAC00 \uC6B0\uB9AC\uB97C \uBC1C\uACAC\uD588\uC2B5\uB2C8\uB2E4.
+    \uB3C4\uB9DD\uCE60 \uC218 \uC5C6\uC744\uAC83 \uAC19\uC2B5\uB2C8\uB2E4."
+  Choices:
+  - ChoiceText: "\uC804\uD22C\uD55C\uB2E4."
+    NextEvent: {fileID: 11400000, guid: ce93f4c017c83954ba4883f1f25e6f3b, type: 2}

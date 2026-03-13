@@ -17,6 +17,10 @@ namespace Core.Data.SpaceShip
         public int MaxReactorPower = 10;
 
 
+        //===선체 체력===
+        public int MaxHullHealth = 20;
+        public int CurrentHullHealth = 20;
+
         //===실드===
         public ShieldData Shield = new();
 

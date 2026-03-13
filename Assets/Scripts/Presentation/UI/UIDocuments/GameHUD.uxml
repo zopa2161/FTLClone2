@@ -1,11 +1,13 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <Style src="../Styles/GameHUD.uss"/>
+    <Style src="../Styles/EventUI.uss"/>
     <Style src="../Styles/PowerSystemUI.uss"/>
     <Style src="../Styles/WeaponSystemUI.uss"/>
     <Style src="../Styles/CrewSystemUI.uss"/>
     <Style src="../Styles/ShieldSystemUI.uss"/>
     <Style src="../Styles/GameMainUI.uss"/>
     <Style src="../Styles/MapUI.uss"/>
+    <Style src="../Styles/HullHealthUI.uss"/>
 
     <!--
         전체 화면을 덮는 오버레이.
@@ -13,48 +15,65 @@
     -->
     <ui:VisualElement name="overlay" class="hud-overlay">
 
-        <!-- ── 상단 행: 좌 상단 승무원 UI / 중앙 GameMain / 우 상단 실드 UI ── -->
+        <!-- ── 상단 행 ── -->
         <ui:VisualElement class="hud-top-row">
-            <ui:VisualElement name="CrewPanel" class="crew-panel"/>
-            <ui:VisualElement class="hud-top-spacer" picking-mode="Ignore"/>
 
-            <!-- GameMain 패널 (자원 표시 + JUMP / 업그레이드 / 설정) -->
-            <ui:VisualElement name="GameMainPanel" class="game-main-panel">
+            <!-- 좌측 컬럼: 체력바+스크랩 / 실드+리소스 / 승무원 -->
+            <ui:VisualElement class="hud-left-column">
 
-                <!-- 자원 표시 행 -->
-                <ui:VisualElement class="resource-row">
-                    <ui:VisualElement class="resource-item">
-                        <ui:Label class="resource-icon" text="FUEL"/>
-                        <ui:Label name="FuelLabel" class="resource-count" text="0"/>
-                    </ui:VisualElement>
-                    <ui:VisualElement class="resource-divider"/>
-                    <ui:VisualElement class="resource-item">
-                        <ui:Label class="resource-icon" text="MSL"/>
-                        <ui:Label name="MissilesLabel" class="resource-count" text="0"/>
-                    </ui:VisualElement>
-                    <ui:VisualElement class="resource-divider"/>
-                    <ui:VisualElement class="resource-item">
-                        <ui:Label class="resource-icon" text="DRN"/>
-                        <ui:Label name="DronesLabel" class="resource-count" text="0"/>
+                <!-- 체력 바 + 스크랩 행 -->
+                <ui:VisualElement class="hud-health-scrap-row">
+                    <ui:VisualElement name="HullHealthPanel" class="hull-health-panel"/>
+                    <ui:VisualElement class="scrap-panel">
+                        <ui:Label class="scrap-icon" text="SCR"/>
+                        <ui:Label name="ScrapLabel" class="resource-count" text="0"/>
                     </ui:VisualElement>
                 </ui:VisualElement>
 
-                <!-- 버튼 행 -->
+                <!-- 실드 + 리소스 행 -->
+                <ui:VisualElement class="hud-shield-resource-row">
+                    <ui:VisualElement name="ShieldPanel" class="shield-panel">
+                        <ui:VisualElement name="ShieldCirclesRow" class="shield-circles-row"/>
+                        <ui:VisualElement class="shield-charge-bg">
+                            <ui:VisualElement name="ShieldChargeFill" class="shield-charge-fill"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- 자원 표시 행 (실드 우측으로 이동) -->
+                    <ui:VisualElement class="resource-row">
+                        <ui:VisualElement class="resource-item">
+                            <ui:Label class="resource-icon" text="FUEL"/>
+                            <ui:Label name="FuelLabel" class="resource-count" text="0"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="resource-divider"/>
+                        <ui:VisualElement class="resource-item">
+                            <ui:Label class="resource-icon" text="MSL"/>
+                            <ui:Label name="MissilesLabel" class="resource-count" text="0"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="resource-divider"/>
+                        <ui:VisualElement class="resource-item">
+                            <ui:Label class="resource-icon" text="DRN"/>
+                            <ui:Label name="DronesLabel" class="resource-count" text="0"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- 승무원 패널 -->
+                <ui:VisualElement name="CrewPanel" class="crew-panel"/>
+
+            </ui:VisualElement>
+
+            <ui:VisualElement class="hud-top-spacer" picking-mode="Ignore"/>
+
+            <!-- GameMain 패널 (버튼만) -->
+            <ui:VisualElement name="GameMainPanel" class="game-main-panel">
                 <ui:VisualElement class="game-main-buttons-row">
                     <ui:Button name="JumpButton" class="game-main-button jump-button" text="JUMP"/>
                     <ui:Button name="UpgradeButton" class="game-main-button" text="▲"/>
                     <ui:Button name="SettingsButton" class="game-main-button" text="⚙"/>
                 </ui:VisualElement>
-
             </ui:VisualElement>
 
-            <ui:VisualElement class="hud-top-spacer" picking-mode="Ignore"/>
-            <ui:VisualElement name="ShieldPanel" class="shield-panel">
-                <ui:VisualElement name="ShieldCirclesRow" class="shield-circles-row"/>
-                <ui:VisualElement class="shield-charge-bg">
-                    <ui:VisualElement name="ShieldChargeFill" class="shield-charge-fill"/>
-                </ui:VisualElement>
-            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- ── 중간 여백 (클릭 무시) ── -->
@@ -91,6 +110,17 @@
     <ui:VisualElement name="MapOverlay" class="map-overlay">
         <ui:VisualElement name="MapContainer" class="map-container"/>
         <ui:Button name="MapCancelButton" class="map-cancel-button" text="CANCEL"/>
+    </ui:VisualElement>
+
+    <!-- 이벤트 오버레이 (dialog / reward, position:absolute로 전체 화면 덮음) -->
+    <ui:VisualElement name="EventOverlay" class="event-overlay" style="display: none;">
+        <ui:VisualElement class="event-panel">
+            <ui:Label name="EventTitle"      class="event-title" text=""/>
+            <ui:Label name="EventDialogText" class="event-dialog-text" text=""/>
+            <ui:VisualElement name="RewardContainer"  class="event-reward-container" style="display: none;"/>
+            <ui:VisualElement name="ChoicesContainer" class="event-choices-container"/>
+            <ui:Button        name="AcceptButton"     class="event-accept-button" text="Accept" style="display: none;"/>
+        </ui:VisualElement>
     </ui:VisualElement>
 
 </ui:UXML>
