@@ -22,6 +22,8 @@ namespace Presentation.System
 
         private SimulationCore _simCore;
         private GameObject _enemyShipObj;
+        private IShipAPI _playerShipAPI;
+        private WeaponManager _weaponManager;
 
         private void Start()
         {
@@ -51,12 +53,13 @@ namespace Presentation.System
             var builder = new GridBuilder();
             var shipAPI = builder.Rebuild(savedData);
             var shieldManager = shipAPI.GetShieldLogic();
-
+            _playerShipAPI = shipAPI;
 
             spaceShipView.Bind(shipAPI, shipAPI.GetAllTiles(), shipAPI.GetAllRooms(), shipAPI.GetAllDoors());
             var crewViews = SetupCrews(shipAPI.GetAllCrews(), spaceShipView);
 
-            var weaponManager = new WeaponManager();
+            _weaponManager = new WeaponManager();
+            var weaponManager = _weaponManager;
             SetupWeapons(shipAPI.GetAllWeapons(), spaceShipView);
 
             weaponManager.Initialize(shipAPI.GetAllWeapons(), shipAPI.GetAllRooms().First(x => x.Data.RoomType == RoomTypeString.Weapon));
@@ -158,6 +161,20 @@ namespace Presentation.System
                 {
                     enemyCombatManager.StartCombat(combat);
                     SetupEnemyShipView(enemyCombatManager.EnemyShipAPI, combat.EnemyShip.ShipData);
+
+                    // 적군 무기 BaseData 설정 (Presentation 계층에서만 AssetCatalogManager 접근 가능)
+                    var enemyWeapons = enemyCombatManager.EnemyShipAPI.GetAllWeapons();
+                    if (enemyWeapons != null)
+                        foreach (var weapon in enemyWeapons)
+                        {
+                            var so = AssetCatalogManager.Instance.GetWeaponBaseData(weapon.Data.WeaponID);
+                            if (so != null) weapon.SetBaseData(so);
+                        }
+
+                    // CombatResolver 생성 및 바인딩 (적군 무기 BaseData 설정 이후)
+                    var resolver = new CombatResolver(_playerShipAPI, enemyCombatManager.EnemyShipAPI, _weaponManager);
+                    resolver.BindWeaponEvents();
+                    enemyCombatManager.SetCombatResolver(resolver);
                 }
             };
             enemyCombatManager.OnCombatEnded += TeardownEnemyShipView;
@@ -254,16 +271,35 @@ namespace Presentation.System
             if (enemyShipView == null) return;
 
             enemyShipView.Bind(enemyAPI, enemyAPI.GetAllTiles(), enemyAPI.GetAllRooms(), enemyAPI.GetAllDoors());
+            enemyShipView.BindShield(enemyAPI.GetShieldLogic());
 
             // 모든 RoomView에 적군 Faction 지정
             foreach (var roomView in enemyShipView.RoomViews)
                 roomView.SetFaction(Faction.Enemy);
+
+            // 적 HP 바 UI 초기화
+            var enemyHullUI = FindObjectOfType<EnemyHullHealthUIView>();
+            if (enemyHullUI != null)
+                enemyHullUI.ShowEnemy(enemyAPI);
+
+            // 적 실드 UI 초기화
+            var enemyShieldUI = FindObjectOfType<EnemyShieldUIView>();
+            if (enemyShieldUI != null)
+                enemyShieldUI.ShowEnemy(enemyAPI.GetShieldLogic());
 
             Debug.Log("[ShipSetupManager] 적군 SpaceShipView 생성 완료.");
         }
 
         private void TeardownEnemyShipView()
         {
+            var enemyHullUI = FindObjectOfType<EnemyHullHealthUIView>();
+            if (enemyHullUI != null)
+                enemyHullUI.HideEnemy();
+
+            var enemyShieldUI = FindObjectOfType<EnemyShieldUIView>();
+            if (enemyShieldUI != null)
+                enemyShieldUI.HideEnemy();
+
             if (_enemyShipObj != null)
             {
                 Destroy(_enemyShipObj);

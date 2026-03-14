@@ -65,12 +65,24 @@
 
             <ui:VisualElement class="hud-top-spacer" picking-mode="Ignore"/>
 
-            <!-- GameMain 패널 (버튼만) -->
-            <ui:VisualElement name="GameMainPanel" class="game-main-panel">
-                <ui:VisualElement class="game-main-buttons-row">
-                    <ui:Button name="JumpButton" class="game-main-button jump-button" text="JUMP"/>
-                    <ui:Button name="UpgradeButton" class="game-main-button" text="▲"/>
-                    <ui:Button name="SettingsButton" class="game-main-button" text="⚙"/>
+            <!-- 우측 컬럼: GameMain 버튼 + 적 HP 바 -->
+            <ui:VisualElement class="hud-right-column">
+                <!-- GameMain 패널 (버튼만) -->
+                <ui:VisualElement name="GameMainPanel" class="game-main-panel">
+                    <ui:VisualElement class="game-main-buttons-row">
+                        <ui:Button name="JumpButton" class="game-main-button jump-button" text="JUMP"/>
+                        <ui:Button name="UpgradeButton" class="game-main-button" text="▲"/>
+                        <ui:Button name="SettingsButton" class="game-main-button" text="⚙"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <!-- 적 HP 패널 (전투 중에만 표시) -->
+                <ui:VisualElement name="EnemyHullHealthPanel" class="enemy-hull-health-panel" style="display: none;"/>
+                <!-- 적 실드 패널 (전투 중에만 표시) -->
+                <ui:VisualElement name="EnemyShieldPanel" class="enemy-shield-panel" style="display: none;">
+                    <ui:VisualElement name="EnemyShieldCirclesRow" class="shield-circles-row"/>
+                    <ui:VisualElement class="shield-charge-bg">
+                        <ui:VisualElement name="EnemyShieldChargeFill" class="shield-charge-fill"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
 

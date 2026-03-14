@@ -216,6 +216,8 @@ GameObject:
   - component: {fileID: 460241842}
   - component: {fileID: 460241843}
   - component: {fileID: 460241844}
+  - component: {fileID: 460241845}
+  - component: {fileID: 460241846}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -364,6 +366,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fb9d66bf0c3fe64499f241a22a42eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Presentation::Presentation.UI.EventDialogUIManager
+--- !u!114 &460241845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 460241834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cbf2a24d3020b44f99cab6e43ac9aaf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Presentation::Presentation.Views.UI.EnemyHullHealthUIView
+  Document: {fileID: 460241838}
+--- !u!114 &460241846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 460241834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7b1e41100476e3459800eabca9f4920, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Presentation::Presentation.Views.UI.EnemyShieldUIView
+  Document: {fileID: 460241838}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -753,63 +781,6 @@ MonoBehaviour:
   RoomLayer:
     serializedVersion: 2
     m_Bits: 128
---- !u!1001 &2034880062
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 581042061879792114, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_Name
-      value: enemy_Ship1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6109126639217650041, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 57985269e0b9f9f438bd24084e5d99af, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -820,4 +791,3 @@ SceneRoots:
   - {fileID: 659759338}
   - {fileID: 266378427}
   - {fileID: 460241839}
-  - {fileID: 2034880062}

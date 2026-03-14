@@ -15,6 +15,7 @@ namespace Presentation.Views
 
         public void Bind(IShieldLogic shieldLogic)
         {
+            Debug.Log("쉴드 바인드");
             _logic = shieldLogic;
             _logic.OnShieldChanged += HandleShieldChanged;
 

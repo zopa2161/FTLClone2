@@ -20,8 +20,8 @@ MonoBehaviour:
     MaxHullHealth: 8
     CurrentHullHealth: 8
     Shield:
-      ChargeGauge: 0
-      CurrentShieldCount: 1
+      ChargeGauge: 0.28
+      CurrentShieldCount: 2
     Resources:
       Fuel: 99
       Missiles: 99
@@ -29,9 +29,9 @@ MonoBehaviour:
       Scrap: 99
     MaxWeaponSlots: 2
     EquippedWeapons:
-    - WeaponID: 
-      IsPowered: 0
-      CurrentChargeTimer: 0
+    - WeaponID: Burst_Laser
+      IsPowered: 1
+      CurrentChargeTimer: 6.0999966
       IsAutoFire: 0
       TargetRoomID: 0
     Tiles:
@@ -291,8 +291,8 @@ MonoBehaviour:
         Y: 0
     Doors:
     - DoorID: 0
-      IsOpen: 0
-      IsForcedOpen: 0
+      IsOpen: 1
+      IsForcedOpen: 1
       TileA:
         X: 2
         Y: 5
@@ -300,8 +300,8 @@ MonoBehaviour:
         X: 2
         Y: 4
     - DoorID: 1
-      IsOpen: 0
-      IsForcedOpen: 0
+      IsOpen: 1
+      IsForcedOpen: 1
       TileA:
         X: 1
         Y: 3

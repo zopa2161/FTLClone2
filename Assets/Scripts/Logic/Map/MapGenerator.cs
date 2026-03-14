@@ -104,7 +104,7 @@ namespace Logic.Map
 
         /// <summary>
         /// 인접한 두 컬럼의 노드를 연결합니다.
-        /// 각 노드가 최소 하나의 연결을 갖도록 보장합니다.
+        /// 이웃한 컬럼끼리는 모든 노드가 서로 연결됩니다.
         /// </summary>
         private void ConnectColumns(List<List<NodeData>> columnGroups)
         {
@@ -113,24 +113,11 @@ namespace Logic.Map
                 var left  = columnGroups[c];
                 var right = columnGroups[c + 1];
 
-                // 오른쪽 노드 각각에 왼쪽 노드 중 하나를 무조건 연결 (고립 방지)
-                foreach (var rNode in right)
-                {
-                    var lNode = left[_random.Next(left.Count)];
-                    if (!lNode.ConnectedNodeIDs.Contains(rNode.NodeID))
-                        lNode.ConnectedNodeIDs.Add(rNode.NodeID);
-                }
-
-                // 추가 랜덤 연결 (맵 밀도 증가)
+                // 왼쪽 컬럼의 모든 노드 → 오른쪽 컬럼의 모든 노드 전부 연결
                 foreach (var lNode in left)
-                {
-                    if (_random.NextDouble() < 0.4)
-                    {
-                        var rNode = right[_random.Next(right.Count)];
+                    foreach (var rNode in right)
                         if (!lNode.ConnectedNodeIDs.Contains(rNode.NodeID))
                             lNode.ConnectedNodeIDs.Add(rNode.NodeID);
-                    }
-                }
             }
         }
 

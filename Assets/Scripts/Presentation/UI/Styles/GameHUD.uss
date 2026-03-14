@@ -50,6 +50,12 @@
     width: 180px;   /* power-panel-container 실제 너비에 맞게 조정 */
 }
 
+/* ── 우측 컬럼: GameMain 버튼 + 적 HP 바 ────────────────────── */
+.hud-right-column {
+    flex-direction: column;
+    align-items: flex-end;
+}
+
 /* ── 좌측 컬럼: 체력바+스크랩 / 실드+리소스 / 승무원 ───────── */
 .hud-left-column {
     flex-direction: column;

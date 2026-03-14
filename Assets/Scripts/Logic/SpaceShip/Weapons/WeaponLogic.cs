@@ -42,20 +42,25 @@ namespace Logic.SpaceShip.Weapons
         public void OnTickUpdate()
         {
             // 전력이 꺼져있거나, 이미 장전 완료면 타이머를 올리지 않음
-            if (!IsPowered || IsReadyToFire) return;
+            if (!IsPowered) return;
 
             // 타이머 증가
             Data.CurrentChargeTimer += (TICK_TIME_STEP * _chargeMultiplier);
 
             // 한도 초과 방지
             if (Data.CurrentChargeTimer > BaseData.BaseCooldown)
-                Data.CurrentChargeTimer = BaseData.BaseCooldown;
+                Data.CurrentChargeTimer = BaseData.BaseCooldown+0.01f;
 
             // UI 갱신을 위해 무전 발송
             OnChargeUpdated?.Invoke(ChargeProgress);
 
-            // 🌟 오토 파이어(자동 발사) 모드이고 타겟이 있다면 즉시 발사 시도
-            if (IsReadyToFire && Data.IsAutoFire && Data.TargetRoomID != -1) TryFire();
+            // 🌟 타겟이 있으면 장전 완료 시 자동 발사
+      
+            if (IsReadyToFire && Data.TargetRoomID != -1)
+            {
+                Debug.Log("Try Fire");
+                TryFire();
+            } 
         }
 
         public void SetPower(bool isOn)

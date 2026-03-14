@@ -151,6 +151,7 @@ namespace Logic.System
         {
             if (!HasSelectedWeapon) return;
             var weapon = GetWeapon(SelectedWeaponIndex);
+            Debug.Log($"Selected Weapon index : {SelectedWeaponIndex}");
             weapon?.SetTarget(roomID);
             Debug.Log($"[WeaponManager] 무기[{SelectedWeaponIndex}] 타겟 Room {roomID} 설정됨.");
         }

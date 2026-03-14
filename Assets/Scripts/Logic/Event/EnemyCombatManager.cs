@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Core.Data.Event;
+using Core.Data.SpaceShip;
 using Core.Interface;
 using Logic.SpaceShip;
 using Logic.System;
@@ -21,6 +22,7 @@ namespace Logic.Event
 
         private IShipAPI _enemyShipAPI;
         private bool _ended;
+        private CombatResolver _combatResolver;
 
         private readonly IEventLogic _eventLogic;
         private readonly SimulationCore _simCore;
@@ -47,8 +49,12 @@ namespace Logic.Event
             _enemyTickables.Clear();
 
             // 적군 Logic 조립 (View 없음 — 순수 Logic만)
+            // SO 에셋 직접 변조 방지: JSON 왕복으로 딥클론 후 사용
+            var clonedData = JsonUtility.FromJson<ShipSaveData>(
+                JsonUtility.ToJson(combatEvent.EnemyShip.ShipData)
+            );
             var builder = new GridBuilder();
-            _enemyShipAPI = builder.Rebuild(combatEvent.EnemyShip.ShipData);
+            _enemyShipAPI = builder.Rebuild(clonedData);
 
             // 적군 tickable 수집
             foreach (var room in _enemyShipAPI.GetAllRooms())
@@ -62,6 +68,27 @@ namespace Logic.Event
                 foreach (var weapon in weapons)
                     if (weapon is ITickable t) _enemyTickables.Add(t);
 
+            // 적군 무기 전력 자동 켜기 (AI 운영)
+            if (weapons != null)
+                foreach (var weapon in weapons)
+                    weapon.SetPower(true);
+
+            // 적군 실드방 전력 자동 켜기
+            foreach (var room in _enemyShipAPI.GetAllRooms())
+                if (room.Data.RoomType == RoomTypeString.Shield)
+                {
+                    room.ChangePower(room.MaxPowerCapacity);
+                    break;
+                }
+
+            // ShieldManager를 ITickable로 등록 (충전 루프)
+            var shieldLogic = _enemyShipAPI.GetShieldLogic();
+            if (shieldLogic is ITickable shieldTick)
+                _enemyTickables.Add(shieldTick);
+
+            // 전투 시작 시 실드 즉시 완충
+            shieldLogic?.RechargeToMax();
+
             // SimulationCore에 등록
             _simCore.RegisterTickables(_enemyTickables);
             _simCore.RegisterTickables(this); // 승리 조건 체크용
@@ -69,10 +96,17 @@ namespace Logic.Event
             Debug.Log($"[EnemyCombatManager] 전투 시작 — 적군 체력: {_enemyShipAPI.CurrentHullHealth}/{_enemyShipAPI.MaxHullHealth}");
         }
 
-        /// <summary>매 틱 적군 체력을 확인합니다. 0 이하가 되면 전투를 종료합니다.</summary>
+        public void SetCombatResolver(CombatResolver resolver)
+        {
+            _combatResolver = resolver;
+        }
+
+        /// <summary>매 틱 적군 무기 자동 발사 및 체력을 확인합니다. 0 이하가 되면 전투를 종료합니다.</summary>
         public void OnTickUpdate()
         {
             if (_ended || _enemyShipAPI == null) return;
+
+            _combatResolver?.TickEnemyWeapons();
 
             if (_enemyShipAPI.CurrentHullHealth <= 0)
             {

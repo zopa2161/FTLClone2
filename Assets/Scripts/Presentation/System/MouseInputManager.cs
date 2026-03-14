@@ -57,10 +57,12 @@ namespace Presentation.System
 
         private void HandleLeftClick()
         {
+        
             if (Input.GetMouseButtonDown(0))
             {
                 if (EventSystem.current.IsPointerOverGameObject() && _clickCrewUI) 
                 {
+             
                     _clickCrewUI = false;
                     return; // UI 위라면 인게임 클릭 판정을 즉시 취소!
                 }
@@ -75,21 +77,21 @@ namespace Presentation.System
             var hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, CrewLayer);
             if (hit.collider != null)
             {
+    
                 var clickedView = hit.collider.GetComponent<CrewView>();
                 if (clickedView != null && clickedView.Logic != null) _commandManager.SelectCrew(clickedView.Logic, false); // OnSelectionChanged가 하이라이트 처리
 
                 return;
             }
             else
-            {
+            {  
                 _commandManager.DeselectCrew();
             }
         
 
             var hitDoor = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, DoorLayer);
             if (hitDoor.collider != null)
-            {
-
+            {  
                 var clickedDoor = hitDoor.collider.GetComponent<DoorView>();
                 if (clickedDoor != null && clickedDoor.Logic != null)
                     clickedDoor.Logic.ToggleDoorManual();
@@ -97,25 +99,26 @@ namespace Presentation.System
                 return;
             }
 
-            if (EventSystem.current.IsPointerOverGameObject())
-            {
-                _commandManager.DeselectCrew();
-                return; // UI 위라면 인게임 클릭 판정을 즉시 취소!
-            }
+  
 
             // 적군 방 타겟 설정: 무기가 선택된 상태에서 적군 방 클릭
+   
             if (_weaponManager != null && _weaponManager.HasSelectedWeapon)
             {
                 var hitRoom = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, RoomLayer);
                 if (hitRoom.collider != null)
-                {
+                {   
+                    
                     var clickedRoom = hitRoom.collider.GetComponent<RoomView>();
                     if (clickedRoom != null && clickedRoom.Logic != null && clickedRoom.Faction == Faction.Enemy)
                     {
                         SetWeaponTarget(_weaponManager.SelectedWeaponIndex, clickedRoom);
                     }
+                    
                 }
+                return;
             }
+   
         }
 
         private void HandleRightClick()

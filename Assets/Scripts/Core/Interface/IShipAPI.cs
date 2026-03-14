@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Core.Interface
 {
@@ -9,5 +10,7 @@ namespace Core.Interface
         IShieldLogic GetShieldLogic();
         int MaxHullHealth { get; }
         int CurrentHullHealth { get; }
+        event Action<int, int> OnHullHealthChanged; // (current, max)
+        void TakeDamage(int damage);
     }
 }

@@ -77,5 +77,13 @@ namespace Logic.System
             OnShieldChanged?.Invoke(CurrentShields, MaxShields, ChargeGauge);
             return true;
         }
+
+        /// <summary>실드를 MaxShields까지 즉시 충전합니다. 전투 시작 시 초기화용.</summary>
+        public void RechargeToMax()
+        {
+            _data.CurrentShieldCount = MaxShields;
+            _data.ChargeGauge = 0f;
+            OnShieldChanged?.Invoke(CurrentShields, MaxShields, ChargeGauge);
+        }
     }
 }

@@ -172,7 +172,7 @@ Core (순수 C# 데이터/인터페이스)
 | `GameSessionManager` | Singleton. Awake()에서 JSON 로드 → GameSaveData 보유. ShipData/MapData 접근자, SetMapData(), SaveGame() |
 | `AssetCatalogManager` | Singleton. SO 카탈로그(ShipHull/Crew/Weapon) List→Dictionary 변환 |
 | `ShipSetupManager` | 게임 시작 시 전체 조립. GridBuilder → View 바인딩 → 매니저 초기화 → SimulationCore 등록 → UI 초기화 |
-| `MouseInputManager` | 좌클릭(승무원 선택/문 토글), 우클릭(이동 명령), Hover(방 하이라이트). `OnCrewUIClicked`으로 UI·인게임 충돌 방지 |
+| `MouseInputManager` | 좌클릭(승무원 선택/문 토글/적군 방 타겟 설정), 우클릭(이동 명령), Hover(아군=이동 대상, 적군=무기 조준 하이라이트). 무기 선택 중 적군 방 클릭 → `WeaponManager.SetTargetForSelectedWeapon()`. `OnCrewUIClicked`으로 UI·인게임 충돌 방지 |
 | `UnityTimeProvider` | Update() → SimulationCore.AdvanceTime(). Space=일시정지, Ctrl+S=수동저장 |
 
 ### Views
@@ -181,7 +181,7 @@ Core (순수 C# 데이터/인터페이스)
 |---|---|
 | `SpaceShipView` | Tile/Room/DoorView 바인딩 허브. `GetWorldPosition(x,y)`, `BindShield()`, `SimulationCore` 프로퍼티 |
 | `TileView` | ITileLogic 바인딩. 에디터 Gizmos로 좌표 표시 |
-| `RoomView` | `OnOxygenChanged` 구독 → 산소 < 50f 시 빨간 오버레이 (Alpha 최대 0.5) |
+| `RoomView` | `OnOxygenChanged` 구독 → 산소 < 50f 시 빨간 오버레이 (Alpha 최대 0.5). `Faction`(Player/Enemy) 프로퍼티, `SetHighlight()`, `SetTargeted()` — 무기 조준·호버 하이라이트 |
 | `DoorView` | `OnDoorStateChanged` 구독 → 스프라이트 교체 (OpenedDoor/ClosedDoor) |
 | `CrewView` | `OnPositionChanged` → 방향 회전 + MoveTowards 이동. `OnHealthChanged` → 체력바. `OnDied` → Destroy |
 | `WeaponView` | Bind() **미구현** |
@@ -293,12 +293,31 @@ Core (순수 C# 데이터/인터페이스)
 - 승무원 WorkingState — 실제 버프 로직 없음 (주석 처리)
 - `SimulateOxygenDiffusion()` — 구현되어 있으나 주석 처리됨
 - 씬 전환 (`SceneManager.LoadScene`) — 주석 처리됨
-- 발사체 생성 로직 — `WeaponLogic.TryFire()` 내 주석으로 TODO
+- 발사체 시각 이펙트 — 피해 계산 자체는 `CombatResolver.ApplyDamage()`로 완전 구현됨. 발사체 오브젝트 생성/애니메이션만 미구현
 
 
 ---
 
 ## 변경 이력
+
+### 전투 로직 구현 (CombatResolver) + 무기 타겟 선택 UI
+- `IShipAPI` — `void TakeDamage(int damage)` 추가
+- `SpaceShipManager` — `TakeDamage` 구현 (`System.Math.Max(0, HP-damage)` → `SetHullHealth` 경유)
+- `WeaponLogic` — 오토파이어 조건에서 `IsAutoFire` 제거 → 타겟(`TargetRoomID != -1`)만 있으면 장전 완료 시 자동 발사
+- `CombatResolver.cs` — **신규** (`Logic/System/`). 아군 `OnFired`→적 피해(`ApplyDamage`), `TickEnemyWeapons()`→적군 랜덤 공격. 타입별 실드: Laser=발사체마다 `TryAbsorbDamage()`, Missile=실드 무시. 피해는 `ProjectileCount`회 반복 적용
+- `EnemyCombatManager` — `StartCombat`에서 적군 무기 전력 전부 자동 ON. `SetCombatResolver()` 추가. `OnTickUpdate`에서 `TickEnemyWeapons()` 호출
+- `ShipSetupManager` — `_playerShipAPI`, `_weaponManager` 필드화. 전투 시작 시 적군 무기 BaseData SO 주입 후 `CombatResolver` 생성/바인딩
+- `RoomView` — `Faction`(Player/Enemy) 프로퍼티, `SetHighlight()`, `SetTargeted()` 추가
+- `MouseInputManager` — 무기 선택 중 좌클릭 시 적군 방(`Faction.Enemy`) 타겟 설정. `SetWeaponTarget()` → `WeaponManager.SetTargetForSelectedWeapon()`. 호버: 승무원 선택=아군 방, 무기 선택=적군 방 하이라이트
+
+### 적 우주선 HP 바 (우측 상단)
+- `IShipAPI` — `event Action<int,int> OnHullHealthChanged` 추가 (current, max)
+- `SpaceShipManager` — `OnHullHealthChanged` 이벤트 구현, `SetHullHealth()` 내에서 발화
+- `EnemyHullHealthUIView.cs` — **신규** (`Presentation/UI/`). `ShowEnemy(IShipAPI)` / `HideEnemy()`. 전투 시작 시 표시, 종료 시 숨김. 이벤트 구독 기반 실시간 갱신
+- `GameHUD.uxml` — `GameMainPanel`을 `hud-right-column`으로 묶고 `EnemyHullHealthPanel` 하위 추가 (기본 `display:none`)
+- `HullHealthUI.uss` — `.enemy-hull-health-panel` 스타일 추가 (빨간 테두리)
+- `GameHUD.uss` — `.hud-right-column` 스타일 추가
+- `ShipSetupManager` — `SetupEnemyShipView`에서 `EnemyHullHealthUIView.ShowEnemy()`, `TeardownEnemyShipView`에서 `HideEnemy()` 호출
 
 ### 이벤트 UI & 적군 전투 시뮬레이션
 - `SimulationCore` — `UnregisterTickable(s)()` 추가. pending removal 패턴으로 틱 도중 안전 제거

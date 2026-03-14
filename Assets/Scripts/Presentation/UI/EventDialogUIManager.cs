@@ -57,7 +57,7 @@ namespace Presentation.UI
 
         private void OnSubEventChanged(SubEventBaseSO subEvent)
         {
-            Debug.Log("이벤트 변화 탐지");
+  
             switch (subEvent)
             {
                 case DialogSubEventSO dialog:
@@ -77,7 +77,6 @@ namespace Presentation.UI
 
         private void ShowDialog(DialogSubEventSO dialog)
         {
-            Debug.Log("ShowDialog");
             _eventTitle.text      = dialog.Title;
             _eventDialogText.text = dialog.DialogText;
 

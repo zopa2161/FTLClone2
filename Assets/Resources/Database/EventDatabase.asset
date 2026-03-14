@@ -14,9 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::Core.Data.Event.EventDatabaseSO
   Events:
   - {fileID: 11400000, guid: 6282f9e5437887741afa64ac4c840ef4, type: 2}
+  - {fileID: 11400000, guid: 21aeebbcc9a293f47ba6daf2756f35a8, type: 2}
   DialogEvents:
   - {fileID: 11400000, guid: 5f053c713d30fb84e9a50f76f001038c, type: 2}
+  - {fileID: 11400000, guid: f0c2897712ce9a544b418843144b03b2, type: 2}
+  - {fileID: 11400000, guid: 2210a56b6cb6c944b976fb732b261683, type: 2}
   CombatEvents:
   - {fileID: 11400000, guid: ce93f4c017c83954ba4883f1f25e6f3b, type: 2}
   RewardEvents:
   - {fileID: 11400000, guid: c4ddc3cd3ae5b5b4285ad864e29aca0f, type: 2}
+  - {fileID: 11400000, guid: 8fe5a8f0a71184049b6637d9f44b02a6, type: 2}

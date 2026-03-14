@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Core.Data.SpaceShip;
 using Core.Interface;
 using Logic.SpaceShip.Rooms;
@@ -20,6 +21,7 @@ namespace Logic.SpaceShip
 
         public int MaxHullHealth { get; private set; }
         public int CurrentHullHealth { get; private set; }
+        public event Action<int, int> OnHullHealthChanged;
 
         //===인터페이스 함수===
 
@@ -150,6 +152,13 @@ namespace Logic.SpaceShip
         {
             MaxHullHealth = maxHealth;
             CurrentHullHealth = currentHealth;
+            OnHullHealthChanged?.Invoke(CurrentHullHealth, MaxHullHealth);
+        }
+
+        public void TakeDamage(int damage)
+        {
+            int newHealth = Math.Max(0, CurrentHullHealth - damage);
+            SetHullHealth(MaxHullHealth, newHealth);
         }
 
         public void SetShieldLogic(ShieldData shieldData)

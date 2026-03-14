@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Core.Data.SpaceShip;
 using Core.Interface;
+using UnityEngine;
 
 namespace Logic.SpaceShip.Rooms
 {
@@ -61,7 +62,7 @@ namespace Logic.SpaceShip.Rooms
         public void ChangePower(int amount)
         {
             // 데이터 갱신
-            Data.CurrentAllocatedPower += amount;
+            Data.CurrentAllocatedPower = Mathf.Min(Data.MaxPower,amount + Data.CurrentAllocatedPower);
 
             // 📢 뷰(View)와 시스템에 "내 전력 바뀌었어!" 라고 무전 발송
             OnPowerChanged?.Invoke(CurrentPower, MaxPowerCapacity);
