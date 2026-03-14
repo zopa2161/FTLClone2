@@ -17,13 +17,15 @@ namespace Logic.System
 
         private IRoomLogic _shieldRoom;
         private ShieldData _data;
+        private int _pendingAbsorption = 0;
 
         // ─── IShieldLogic ───────────────────────────────────────────────
         /// <summary>전력 2→1, 4→2, 6→3, 8→4 (최대 4개)</summary>
         public int MaxShields => _shieldRoom != null ? Math.Min(_shieldRoom.CurrentPower / 2, 4) : 0;
 
-        public int CurrentShields => _data.CurrentShieldCount;
-        public float ChargeGauge   => _data.ChargeGauge;
+        public int CurrentShields    => _data.CurrentShieldCount;
+        public float ChargeGauge     => _data.ChargeGauge;
+        public int PendingAbsorption => _pendingAbsorption;
 
         public event Action<int, int, float> OnShieldChanged;
         // ────────────────────────────────────────────────────────────────
@@ -67,6 +69,28 @@ namespace Logic.System
             OnShieldChanged?.Invoke(CurrentShields, max, ChargeGauge);
         }
         // ────────────────────────────────────────────────────────────────
+
+        public bool TryReserveShield()
+        {
+            if (_data.CurrentShieldCount - _pendingAbsorption <= 0) return false;
+            _pendingAbsorption++;
+            return true;
+        }
+
+        public void ApplyReservedAbsorption()
+        {
+            if (_pendingAbsorption > 0) _pendingAbsorption--;
+            if (_data.CurrentShieldCount > 0)
+            {
+                _data.CurrentShieldCount--;
+                OnShieldChanged?.Invoke(CurrentShields, MaxShields, ChargeGauge);
+            }
+        }
+
+        public void ResetPendingAbsorption()
+        {
+            _pendingAbsorption = 0;
+        }
 
         /// <summary>피해 한 방을 실드로 흡수합니다. 실드가 없으면 false 반환.</summary>
         public bool TryAbsorbDamage()

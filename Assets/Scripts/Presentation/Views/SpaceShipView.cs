@@ -14,6 +14,9 @@ namespace Presentation.Views
         public List<DoorView> DoorViews = new();
         public ShieldView ShieldView;
 
+        [Header("실드 흡수 위치")]
+        public Transform ShieldAbsorbingPoint;
+
         public SimulationCore SimulationCore { get; set; }
         // (선택) 타일 뷰나 승무원 뷰 리스트도 필요하다면 추가 가능
 

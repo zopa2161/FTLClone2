@@ -10,6 +10,7 @@ using Logic.Map;
 using Logic.System;
 using Presentation.UI;
 using Presentation.Views;
+using Presentation.Views.Combat;
 using Presentation.Views.UI;
 using UnityEngine;
 
@@ -24,6 +25,9 @@ namespace Presentation.System
         private GameObject _enemyShipObj;
         private IShipAPI _playerShipAPI;
         private WeaponManager _weaponManager;
+        private SpaceShipView _playerSpaceShipView;
+        private SpaceShipView _enemySpaceShipView;
+        private CombatResolver _combatResolver;
 
         private void Start()
         {
@@ -48,6 +52,7 @@ namespace Presentation.System
 
             hullObj = Instantiate(hullPrefab, Vector3.zero, Quaternion.identity);
             var spaceShipView = hullObj.GetComponent<SpaceShipView>();
+            _playerSpaceShipView = spaceShipView;
 
             // 3. 논리적 타일/방 조립 (이전 대화의 GridBuilder 로직)
             var builder = new GridBuilder();
@@ -172,9 +177,14 @@ namespace Presentation.System
                         }
 
                     // CombatResolver 생성 및 바인딩 (적군 무기 BaseData 설정 이후)
-                    var resolver = new CombatResolver(_playerShipAPI, enemyCombatManager.EnemyShipAPI, _weaponManager);
-                    resolver.BindWeaponEvents();
-                    enemyCombatManager.SetCombatResolver(resolver);
+                    _combatResolver = new CombatResolver(_playerShipAPI, enemyCombatManager.EnemyShipAPI, _weaponManager);
+                    _combatResolver.BindWeaponEvents();
+                    enemyCombatManager.SetCombatResolver(_combatResolver);
+
+                    // CombatViewManager — 전투 시작 2단계 초기화 (적군 View + resolver 연결)
+                    var combatViewManager = FindObjectOfType<CombatViewManager>();
+                    if (combatViewManager != null)
+                        combatViewManager.OnCombatStarted(_enemySpaceShipView, _combatResolver);
                 }
             };
             enemyCombatManager.OnCombatEnded += TeardownEnemyShipView;
@@ -221,6 +231,11 @@ namespace Presentation.System
             if (eventDialogUI != null)
                 eventDialogUI.Initialize(eventLogicManager);
 
+            // CombatViewManager 초기화 (플레이어 정보만으로 1단계 초기화)
+            var combatViewManager = FindObjectOfType<CombatViewManager>();
+            if (combatViewManager != null)
+                combatViewManager.Initialize(_playerSpaceShipView, _playerShipAPI, _simCore);
+
             Debug.Log("🚀 우주선 셋업 및 바인딩 완벽하게 종료!");
         }
 
@@ -266,8 +281,9 @@ namespace Presentation.System
             }
 
             // 적군 우주선은 화면 우측에 배치 (추후 위치 조정 가능)
-            _enemyShipObj = Instantiate(hullPrefab, new Vector3(10f, 0f, 0f), Quaternion.identity);
-            var enemyShipView = _enemyShipObj.GetComponent<SpaceShipView>();
+            _enemyShipObj = Instantiate(hullPrefab, new Vector3(15f, 0f, 0f), Quaternion.identity);
+            _enemySpaceShipView = _enemyShipObj.GetComponent<SpaceShipView>();
+            var enemyShipView = _enemySpaceShipView;
             if (enemyShipView == null) return;
 
             enemyShipView.Bind(enemyAPI, enemyAPI.GetAllTiles(), enemyAPI.GetAllRooms(), enemyAPI.GetAllDoors());
@@ -292,6 +308,10 @@ namespace Presentation.System
 
         private void TeardownEnemyShipView()
         {
+            var combatViewManager = FindObjectOfType<CombatViewManager>();
+            if (combatViewManager != null)
+                combatViewManager.OnCombatEnded();
+
             var enemyHullUI = FindObjectOfType<EnemyHullHealthUIView>();
             if (enemyHullUI != null)
                 enemyHullUI.HideEnemy();

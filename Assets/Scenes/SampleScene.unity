@@ -659,6 +659,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1410319640
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1410319641}
+  m_Layer: 0
+  m_Name: ProjectileStartingPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1410319641
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410319640}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 10, y: -5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1561525002
 GameObject:
   m_ObjectHideFlags: 0
@@ -673,6 +704,7 @@ GameObject:
   - component: {fileID: 1561525005}
   - component: {fileID: 1561525007}
   - component: {fileID: 1561525008}
+  - component: {fileID: 1561525009}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -781,6 +813,22 @@ MonoBehaviour:
   RoomLayer:
     serializedVersion: 2
     m_Bits: 128
+--- !u!114 &1561525009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561525002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10871cc77ca48674c9d783440ba0388a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Presentation::Presentation.Views.Combat.CombatViewManager
+  LaserPrefab: {fileID: 4219317579080529247, guid: 5b3f5d268a9ff7346b47b02da10bad2f, type: 3}
+  MissilePrefab: {fileID: 6487981607598298617, guid: a0f30bee5cd5f9c46b5393ca2850beb3, type: 3}
+  BeamPrefab: {fileID: 0}
+  LaunchPoint: {fileID: 1410319641}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -791,3 +839,4 @@ SceneRoots:
   - {fileID: 659759338}
   - {fileID: 266378427}
   - {fileID: 460241839}
+  - {fileID: 1410319641}

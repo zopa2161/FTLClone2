@@ -60,6 +60,13 @@ Core (순수 C# 데이터/인터페이스)
 | `EventSaveData` | 이벤트 진행 상황 직렬화. IsEventActive, ActiveEventID, ActiveSubEventID. GameSaveData.Event 필드로 보유 |
 | `RewardType` (enum) | Scrap, Fuel, Missiles, Drones, Weapon, MaxReactorPower |
 
+### Data/Combat
+
+| 파일 | 설명 |
+|---|---|
+| `HitResult` | 발사체 1발의 미리 계산된 결과 구조체. `ReservedShield(bool)`, `Damage(int)` |
+| `PendingAttack` | 발사 즉시 큐에 삽입되는 공격 정보. `TargetShipAPI`, `Hits(List<HitResult>)`, `TicksRemaining`, `SourceWeapon`, `TargetRoomID`, `WeaponType` |
+
 ### Data/Storage
 
 | 파일 | 설명 |
@@ -83,7 +90,7 @@ Core (순수 C# 데이터/인터페이스)
 | `ITileLogic` | TileCoord, OxygenLevel, BreachLevel |
 | `IPowerSystem` | MaxReactorPower, AvailableReactorPower + `TryAddPowerToRoom()`, `TryRemovePowerFromRoom()`, `OnReactorPowerChanged` |
 | `IWeaponLogic` | Data, BaseData, IsPowered, IsReadyToFire, ChargeProgress(0~1) + `SetPower()`, `SetAutoFire()`, `SetTarget()`, `TryFire()`, `SetBaseData()`, `SetChargeMultiplier()`, `OnChargeUpdated`, `OnPowerStateChanged`, `OnFired` |
-| `IShieldLogic` | MaxShields, CurrentShields, ChargeGauge + `TryAbsorbDamage()`, `OnShieldChanged(current, max, chargeGauge)` |
+| `IShieldLogic` | MaxShields, CurrentShields, ChargeGauge, PendingAbsorption + `TryReserveShield()`, `ApplyReservedAbsorption()`, `ResetPendingAbsorption()`, `OnShieldChanged(current, max, chargeGauge)` |
 | `IResourceManager` | Fuel, Missiles, Drones, Scrap + 각 `OnXxxChanged` 이벤트, `TryConsume/Add` 메서드 |
 | `ICombatManager` | IsInCombat + `OnCombatStateChanged` |
 | `IMapLogic` | CurrentNode, `GetReachableNodes()`, `MoveToNode()`, `OnNodeChanged` |
@@ -139,7 +146,8 @@ Core (순수 C# 데이터/인터페이스)
 | `ShipSimulationManager` | ITickable. BFS 거리맵으로 진공 바람 시뮬레이션. 산소 생성은 OxygenRoomLogic 위임 |
 | `PowerManager` | `IPowerSystem` 구현. 원자로 전력 할당/회수. 방별 최대치 초과 방지 |
 | `WeaponManager` | 무기 ON/OFF. 전력 초과 시 뒤에서부터 강제 종료. Manned 보너스 1.2x |
-| `ShieldManager` | `IShieldLogic` + `ITickable`. 75틱/1실드 충전. Manned 1.2× 보너스. `TryAbsorbDamage()` |
+| `ShieldManager` | `IShieldLogic` + `ITickable`. 75틱/1실드 충전. Manned 1.2× 보너스. `TryReserveShield()` — pendingAbsorption 예약, `ApplyReservedAbsorption()` — 발사체 도달 시 실제 실드 차감 |
+| `CombatResolver` | `ITickable`. 발사→피해 사이를 중계. `PROJECTILE_TRAVEL_TICKS=15`. 발사 시 `PreCalculateAndEnqueue()` → `PendingAttack` 큐 삽입 + `OnAttackQueued` 이벤트 발행. 매 틱 카운트다운 → 만료 시 실드/HP 실제 적용. `ClearPendingAttacks()` — 전투 종료 정리 |
 | `ResourceManager` | `IResourceManager` 구현. Fuel/Missiles/Drones/Scrap 추적. 소비·증가 + 이벤트 발행 |
 | `CombatManager` | `ICombatManager` 구현. SetCombatState(bool) |
 | `LogicCommandManager` | 승무원 선택/이동 명령 브릿지. `SelectCrew(clickedByUI)`, `OrderMoveToRoom()`. `OnSelectionChanged`, `OnCrewUIClicked` 이벤트 |
@@ -179,12 +187,13 @@ Core (순수 C# 데이터/인터페이스)
 
 | 클래스 | 역할 |
 |---|---|
-| `SpaceShipView` | Tile/Room/DoorView 바인딩 허브. `GetWorldPosition(x,y)`, `BindShield()`, `SimulationCore` 프로퍼티 |
+| `SpaceShipView` | Tile/Room/DoorView 바인딩 허브. `GetWorldPosition(x,y)`, `BindShield()`, `SimulationCore` 프로퍼티. `ShieldAbsorbingPoint` — 실드 흡수 위치 Transform (발사체 목적지) |
 | `TileView` | ITileLogic 바인딩. 에디터 Gizmos로 좌표 표시 |
 | `RoomView` | `OnOxygenChanged` 구독 → 산소 < 50f 시 빨간 오버레이 (Alpha 최대 0.5). `Faction`(Player/Enemy) 프로퍼티, `SetHighlight()`, `SetTargeted()` — 무기 조준·호버 하이라이트 |
 | `DoorView` | `OnDoorStateChanged` 구독 → 스프라이트 교체 (OpenedDoor/ClosedDoor) |
 | `CrewView` | `OnPositionChanged` → 방향 회전 + MoveTowards 이동. `OnHealthChanged` → 체력바. `OnDied` → Destroy |
 | `WeaponView` | Bind() **미구현** |
+| `CombatViewManager` | `MonoBehaviour` + `ITickable`. 발사체 생성/이동/소멸 관리. `OnAttackQueued` 구독 → 거리 기반 대기(`PROJECTILE_SPEED=0.5f`) 후 일정 속도 Lerp. 생성 시 발사 방향으로 회전(`Atan2+90°`). 대기 중 `SetActive(false)` → 이동 시작 시 `SetActive(true)`. 전투 종료 시 비행 중 발사체 일괄 `Destroy` |
 | `ShieldView` | `OnShieldChanged` 구독 → 실드 0↔1+ 경계에서 GameObject on/off |
 
 ### UI (Unity UI Toolkit)
@@ -293,12 +302,22 @@ Core (순수 C# 데이터/인터페이스)
 - 승무원 WorkingState — 실제 버프 로직 없음 (주석 처리)
 - `SimulateOxygenDiffusion()` — 구현되어 있으나 주석 처리됨
 - 씬 전환 (`SceneManager.LoadScene`) — 주석 처리됨
-- 발사체 시각 이펙트 — 피해 계산 자체는 `CombatResolver.ApplyDamage()`로 완전 구현됨. 발사체 오브젝트 생성/애니메이션만 미구현
+- 발사체 프리팹 — `CombatViewManager`에 LaserPrefab/MissilePrefab/BeamPrefab Inspector 할당 필요. LaunchPoint Transform 및 각 우주선의 ShieldAbsorbingPoint 배치 필요
 
 
 ---
 
 ## 변경 이력
+
+### 발사체 애니메이션 (CombatViewManager) + 지연 피해 시스템
+- `Core/Data/Combat/PendingAttack.cs` — **신규**. `HitResult(ReservedShield, Damage)` + `PendingAttack` 클래스
+- `IShieldLogic` — `PendingAbsorption`, `TryReserveShield()`, `ApplyReservedAbsorption()`, `ResetPendingAbsorption()` 추가. 발사체 비행 중 실드가 시각적으로 유지되는 pendingAbsorption 패턴
+- `ShieldManager` — 위 인터페이스 구현. `_pendingAbsorption` 카운터 관리
+- `CombatResolver.cs` — **신규** (`Logic/System/`). `ITickable`. 발사 즉시 결과 계산(`PreCalculateAndEnqueue`) → 15틱 후 실제 피해 적용. `OnAttackQueued` 이벤트 발행. Laser=실드 예약, Missile=실드 무시
+- `EnemyCombatManager` — `SetCombatResolver()` 추가 (SimulationCore에 CombatResolver 등록). `EndCombat()` — `ClearPendingAttacks()` + `UnregisterTickable(combatResolver)` 포함
+- `SpaceShipView` — `ShieldAbsorbingPoint` Transform 필드 추가
+- `CombatViewManager.cs` — **신규** (`Presentation/Views/Combat/`). `MonoBehaviour` + `ITickable`. 거리 기반 대기 후 일정 속도 이동(`PROJECTILE_SPEED=0.5f`). 생성 시 방향 회전(`Atan2+90°`). 대기 중 비활성화. 2단계 초기화: `Initialize()`(플레이어) → `OnCombatStarted()`(전투 시작)
+- `ShipSetupManager` — `_playerSpaceShipView`, `_enemySpaceShipView`, `_combatResolver` 필드화. `CombatViewManager` 1·2단계 초기화 연결. `TeardownEnemyShipView`에서 `OnCombatEnded()` 호출
 
 ### 전투 로직 구현 (CombatResolver) + 무기 타겟 선택 UI
 - `IShipAPI` — `void TakeDamage(int damage)` 추가

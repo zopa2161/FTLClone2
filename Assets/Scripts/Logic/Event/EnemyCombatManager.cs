@@ -99,6 +99,7 @@ namespace Logic.Event
         public void SetCombatResolver(CombatResolver resolver)
         {
             _combatResolver = resolver;
+            _simCore.RegisterTickables(resolver);
         }
 
         /// <summary>매 틱 적군 무기 자동 발사 및 체력을 확인합니다. 0 이하가 되면 전투를 종료합니다.</summary>
@@ -122,8 +123,13 @@ namespace Logic.Event
             if (_ended) return;
             _ended = true;
 
+            // 비행 중인 발사체 큐 폐기 + 양쪽 실드 PendingAbsorption 초기화
+            _combatResolver?.ClearPendingAttacks();
+
             _simCore.UnregisterTickables(_enemyTickables);
             _simCore.UnregisterTickable(this);
+            if (_combatResolver != null)
+                _simCore.UnregisterTickable(_combatResolver);
             _enemyTickables.Clear();
 
             Debug.Log("[EnemyCombatManager] 전투 종료 — 틱 해제 완료.");
