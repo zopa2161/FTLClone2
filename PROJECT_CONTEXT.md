@@ -423,3 +423,6 @@ Core (순수 C# 데이터/인터페이스)
 
 ### GameSaveData 도입
 - `GameSaveData` 신규. `SaveLoadManager` 제네릭화. `GameSessionManager` GameSaveData로 교체
+
+### README 작성
+- `README.md` 신규. 프로젝트 전체 구조, 아키텍처, 핵심 시스템, 데이터 흐름, 주요 수치, 미구현 항목, 시작 방법 상세 문서화
