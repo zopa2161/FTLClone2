@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Core.Data.SpaceShip;
 using Core.Interface;
-
+using System;
 namespace Logic.SpaceShip
 {
     public class TileLogic : ITileLogic
@@ -21,6 +21,18 @@ namespace Logic.SpaceShip
         {
             get => Data.BreachLevel;
             set => Data.BreachLevel = value;
+        }
+
+        public event Action<float> OnFireChanged;
+
+        public float FireLevel
+        {
+            get => Data.FireLevel;
+            set
+            {
+                Data.FireLevel = value;
+                OnFireChanged?.Invoke(value);
+            }
         }
 
         public void Initialize(TileData data)

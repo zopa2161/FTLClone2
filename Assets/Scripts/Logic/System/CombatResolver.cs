@@ -98,6 +98,7 @@ namespace Logic.System
                     else if (hit.Damage > 0)
                     {
                         attack.TargetShipAPI.TakeDamage(hit.Damage);
+                        attack.TargetShipAPI.TryStartFire(attack.TargetRoomID);
                         Debug.Log($"[CombatResolver] 발사체 도달 — {hit.Damage} 피해 → HP: {attack.TargetShipAPI.CurrentHullHealth}");
                     }
                 }

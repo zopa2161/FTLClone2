@@ -12,5 +12,6 @@ namespace Core.Interface
         int CurrentHullHealth { get; }
         event Action<int, int> OnHullHealthChanged; // (current, max)
         void TakeDamage(int damage);
+        void TryStartFire(int roomID);
     }
 }

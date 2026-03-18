@@ -5,11 +5,16 @@ using Core.Interface;
 using Logic.SpaceShip.Rooms;
 using Logic.System;
 using UnityEngine;
+using Random = System.Random;
 
 namespace Logic.SpaceShip
 {
     public class SpaceShipManager : IShipAPI
     {
+        private const float FIRE_IGNITION_CHANCE = 0.30f;
+        private const float FIRE_INITIAL_LEVEL   = 10f;
+        private readonly Random _random   = new Random();
+
         private List<CrewLogic> _crews = new();
         private List<DoorLogic> _doors = new();
         private Dictionary<TileCoord, TileLogic> _logicMap;
@@ -159,6 +164,26 @@ namespace Logic.SpaceShip
         {
             int newHealth = Math.Max(0, CurrentHullHealth - damage);
             SetHullHealth(MaxHullHealth, newHealth);
+        }
+
+        public void TryStartFire(int roomID)
+        {
+            if (_random.NextDouble() > FIRE_IGNITION_CHANCE) return;
+
+            var room = _rooms.Find(r => r.Data.RoomID == roomID);
+            if (room == null) return;
+
+            var tiles = room.GetRoomTiles();
+            if (tiles.Count == 0) return;
+
+            var coord = tiles[_random.Next(tiles.Count)];
+            var tile  = _logicMap[coord];
+            if (tile.FireLevel <= 0f)
+            {
+                Debug.Log("불지르기");
+                tile.FireLevel = FIRE_INITIAL_LEVEL;
+            }
+                
         }
 
         public void SetShieldLogic(ShieldData shieldData)

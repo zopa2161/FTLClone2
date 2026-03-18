@@ -9,5 +9,9 @@ namespace Core.Interface
         float OxygenLevel { get; set; }
 
         float BreachLevel { get; set; }
+
+        float FireLevel { get; set; }
+
+        event System.Action<float> OnFireChanged;
     }
 }

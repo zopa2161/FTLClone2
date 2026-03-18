@@ -28,6 +28,7 @@ namespace Logic.SpaceShip
 
         public event Action<float, float> OnHealthChanged;
         public event Action<ICrewLogic> OnDied;
+        public event Action<CrewStateType> OnStateChanged;
 
         public void CommandMoveTo(TileCoord targetCoord)
         {
@@ -67,19 +68,18 @@ namespace Logic.SpaceShip
             // 💡 1. 내가 스폰된 위치의 방을 가져옵니다.
             var currentRoom = GridMap.GetRoomAt(spawnCoord);
 
-            // 💡 2. 똑똑한 초기 상태 결정 로직
-            // 이 방이 존재하고, 스폰된 자리가 하필 '작업 타일(0번)'이라면?
-            if (currentRoom != null && currentRoom.IsWorkingTile(spawnCoord))
+            // 💡 2. 초기 상태 결정 — 불 > 작업 > 대기 순으로 우선
+            if (currentRoom != null && currentRoom.IsOnFire)
             {
-                // 스폰되자마자 즉시 작업 모드로 돌입! (콘솔 방향으로 몸 틀기 포함)
-                // 전력 상태가 1이상임을 확인해야함.
+                ChangeState(new CrewFireFightingState());
+            }
+            else if (currentRoom != null && currentRoom.IsWorkingTile(spawnCoord))
+            {
                 if (currentRoom.Data.CurrentAllocatedPower > 0) ChangeState(new CrewWorkingState(currentRoom));
-
-
+                else ChangeState(new CrewIdleState());
             }
             else
             {
-                // 작업 자리가 아니면 (복도, 1번 타일 등) 평소처럼 대기 상태로 스폰
                 ChangeState(new CrewIdleState());
             }
         }
@@ -94,6 +94,9 @@ namespace Logic.SpaceShip
 
             // 3. 새로운 상태 입장
             _currentState?.Enter(this);
+
+            // 4. 뷰에 상태 변경 통보
+            OnStateChanged?.Invoke(_currentState.StateType);
         }
 
         // --- 내부 헬퍼 함수들 (State들이 쓰기 편하게 열어둠) ---
@@ -131,17 +134,16 @@ namespace Logic.SpaceShip
 
         private void Breathe()
         {
-            // 1. 내가 현재 밟고 있는 타일을 지도에게 물어봅니다. (아주 가벼운 연산!)
             var myTile = GridMap.GetTileAt(CurrentCoord);
 
             if (myTile != null)
-                // 2. 내 발밑 타일의 산소가 20% 미만이라면? (질식 시작)
+            {
                 if (myTile.OxygenLevel < 50f)
-                    // 1틱당 1의 데미지를 입습니다. (초당 10번 틱이 돈다면 초당 10 데미지)
                     TakeDamage(0.5f);
-            // (선택) 여기서 뷰에게 "나 숨막혀!" 하는 기침 애니메이션 무전을 칠 수도 있습니다.
-            // (추후 화재 데미지도 여기서 검사하면 완벽합니다)
-            // if (myTile.Data.IsOnFire) TakeDamage(2f);
+
+                if (myTile.FireLevel > 0f)
+                    TakeDamage(2f);
+            }
         }
 
         private void Die()

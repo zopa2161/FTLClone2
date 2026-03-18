@@ -1,5 +1,6 @@
 ﻿using System;
 using Core.Data.SpaceShip;
+using Core.enums;
 using MoveDirection = Core.enums.MoveDirection;
 
 namespace Core.Interface
@@ -24,5 +25,7 @@ namespace Core.Interface
         void TakeDamage(float amount);
 
         event Action<ICrewLogic> OnDied;
+
+        event Action<CrewStateType> OnStateChanged;
     }
 }

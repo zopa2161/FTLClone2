@@ -1,7 +1,11 @@
-﻿namespace Logic.SpaceShip.CrewState
+﻿using Core.enums;
+
+namespace Logic.SpaceShip.CrewState
 {
     public class CrewMovingState : ICrewState
     {
+        public CrewStateType StateType => CrewStateType.Moving;
+
         private const int TickForMove = 3;
         private int movingCount;
 
@@ -39,8 +43,13 @@
                 // 1. 내가 서 있는 좌표의 방을 가져옵니다.
                 var currentRoom = crew.GridMap.GetRoomAt(crew.CurrentCoord);
 
-                // 2. 💡 이 방이 존재하고, 여기가 '작업 타일(0번 타일)'이라면?
-                if (currentRoom != null && currentRoom.IsWorkingTile(crew.CurrentCoord))
+                // 2. 불이 나고 있으면 진압 상태 우선
+                if (currentRoom != null && currentRoom.IsOnFire)
+                {
+                    crew.ChangeState(new CrewFireFightingState());
+                }
+                // 3. 💡 이 방이 존재하고, 여기가 '작업 타일(0번 타일)'이라면?
+                else if (currentRoom != null && currentRoom.IsWorkingTile(crew.CurrentCoord))
                 {
                     // 작업 상태로 돌입!
                     if (currentRoom.Data.CurrentAllocatedPower > 0) crew.ChangeState(new CrewWorkingState(currentRoom));

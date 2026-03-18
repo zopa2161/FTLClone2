@@ -33,6 +33,7 @@ namespace Presentation.Views.UI
                 _bars[i] = bar;
             }
 
+            shipAPI.OnHullHealthChanged += Refresh;
             Refresh(shipAPI.CurrentHullHealth, maxHealth);
         }
 

@@ -52,6 +52,16 @@ namespace Logic.SpaceShip.Rooms
             }
         }
 
+        public bool IsOnFire
+        {
+            get
+            {
+                foreach (var tile in _tileLogics)
+                    if (tile.FireLevel > 0f) return true;
+                return false;
+            }
+        }
+
 
         public bool IsWorkingTile(TileCoord coord)
         {

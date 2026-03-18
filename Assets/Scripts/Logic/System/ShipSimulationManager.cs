@@ -4,6 +4,7 @@ using Core.Interface;
 using Logic.SpaceShip;
 using Logic.SpaceShip.Rooms;
 using UnityEngine;
+using Random = System.Random;
 
 namespace Logic.System
 {
@@ -15,6 +16,14 @@ namespace Logic.System
 
         // 확산 속도 (1틱당 인접 타일과 농도 차이의 몇 %를 교환할 것인가)
         private const float DIFFUSION_RATE = 0.05f;
+
+        // 화재 시뮬레이션 상수
+        private const float FIRE_SPREAD_CHANCE    = 0.01f; // 틱당 전파 확률
+        private const float FIRE_GROWTH_RATE      = 0.5f;  // 틱당 강화량
+        private const float FIRE_DECAY_RATE       = 0.5f;  // 틱당 진화량
+        private const float FIRE_INITIAL_LEVEL    = 10f;   // 전파 시 초기 화재값
+        private const float FIRE_OXYGEN_THRESHOLD = 50f;   // 전파·강화 기준 산소값
+        private readonly Random _random    = new Random();
 
         private readonly OxygenRoomLogic _oxygenRoom;
         private readonly SpaceShipManager _shipManager;
@@ -39,7 +48,48 @@ namespace Logic.System
                 SimulateVacuumWind(distanceMap);
             }
             // 브리치가 없으면 평소처럼 잔잔한 확산(Diffusion) 로직 실행
-            // SimulateOxygenDiffusion(); 
+            // SimulateOxygenDiffusion();
+
+            SimulateFire();
+        }
+
+        private void SimulateFire()
+        {
+            var newFires = new List<TileCoord>(); // 더블 버퍼링: 이번 틱에 새로 붙을 타일
+
+            foreach (var tile in _shipManager.GetAllTiles())
+            {
+                if (tile.FireLevel <= 0f) continue;
+
+                var room = _shipManager.GetRoomAt(tile.TileCoord);
+                float roomOxygen = room?.AverageOxygen ?? 0f;
+
+                // ─── 전파 (방 평균 산소 >= 50) ──────────────────────────────
+                if (roomOxygen >= FIRE_OXYGEN_THRESHOLD)
+                {
+                    foreach (var neighborCoord in _shipManager.GetConnectedNeighbors(tile.TileCoord))
+                    {
+                        var door = _shipManager.GetDoorBetween(tile.TileCoord, neighborCoord);
+                        if (door != null && !door.IsOpen) continue;
+
+                        var neighbor = _shipManager.GetTileAt(neighborCoord);
+                        if (neighbor.FireLevel > 0f) continue;
+
+                        if (_random.NextDouble() < FIRE_SPREAD_CHANCE && !newFires.Contains(neighborCoord))
+                            newFires.Add(neighborCoord);
+                    }
+                }
+
+                // ─── 강화 / 진화 (타일 산소 기준) ───────────────────────────
+                if (tile.OxygenLevel >= FIRE_OXYGEN_THRESHOLD)
+                    tile.FireLevel = Mathf.Min(100f, tile.FireLevel + FIRE_GROWTH_RATE);
+                else
+                    tile.FireLevel = Mathf.Max(0f, tile.FireLevel - FIRE_DECAY_RATE);
+            }
+
+            // 새 불 일괄 적용
+            foreach (var coord in newFires)
+                _shipManager.GetTileAt(coord).FireLevel = FIRE_INITIAL_LEVEL;
         }
 
         private List<ITileLogic> GetBreachTiles()

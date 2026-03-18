@@ -11,6 +11,7 @@ namespace Core.Data.SpaceShip
         public float OxygenLevel = 100f; // 기본값 100
 
         public float BreachLevel;
+        public float FireLevel = 0f; // 0 = 불 없음, 0~100 = 화재 강도
         public List<TileCoord> ConnectedNeighborCoords = new();
 
 

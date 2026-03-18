@@ -1,7 +1,11 @@
-﻿namespace Logic.SpaceShip.CrewState
+﻿using Core.enums;
+
+namespace Logic.SpaceShip.CrewState
 {
     public interface ICrewState
     {
+        CrewStateType StateType { get; }
+
         // 상태에 진입할 때 딱 한 번 실행
         void Enter(CrewLogic crew);
 

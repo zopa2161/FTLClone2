@@ -9,6 +9,9 @@ namespace Presentation.Views
     {
         [Header("이동 연출 설정")] public float MoveSpeed = 5f;
 
+        [Header("상태 마크")] [SerializeField] private GameObject _workingMark;
+        [SerializeField] private GameObject _fireFightingMark;
+
         [Header("체력바 UI")] public GameObject HealthBarContainer;
 
         // 💡 실제 체력 비율에 따라 길이가 줄어들 알맹이 이미지의 Transform
@@ -45,6 +48,7 @@ namespace Presentation.Views
                 Logic.OnPositionChanged -= HandlePositionChanged;
                 Logic.OnHealthChanged -= HandleHealthChanged;
                 Logic.OnDied -= HandleDied;
+                Logic.OnStateChanged -= HandleStateChanged;
             }
         }
 
@@ -63,12 +67,9 @@ namespace Presentation.Views
             _targetWorldPosition = _shipView.GetWorldPosition(logic.Data.CurrentX, logic.Data.CurrentY);
             transform.position = _targetWorldPosition;
             Logic.OnPositionChanged += HandlePositionChanged;
-
-
-            // 3. 📡 무전기(Event) 구독: "앞으로 로직에서 이동했다는 방송이 나오면 내 함수를 실행해!"
-            //logic.OnPositionChanged += UpdatePositionSmoothly;
             logic.OnHealthChanged += HandleHealthChanged;
             logic.OnDied += HandleDied;
+            logic.OnStateChanged += HandleStateChanged;
         }
 
         private void HandlePositionChanged(int logicalX, int logicalY, MoveDirection direction)
@@ -120,6 +121,14 @@ namespace Presentation.Views
 
             // 2. 나 자신(게임 오브젝트)을 씬에서 파괴!
             Destroy(gameObject);
+        }
+
+        private void HandleStateChanged(CrewStateType stateType)
+        {
+            Debug.Log("상태변화 탐지");
+            Debug.Log($"바뀐 상태 : {stateType}");
+            _workingMark?.SetActive(stateType == CrewStateType.Working);
+            _fireFightingMark?.SetActive(stateType == CrewStateType.FireFighting);
         }
 
         public void Highlight(bool b)

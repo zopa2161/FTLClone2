@@ -1,7 +1,10 @@
-﻿namespace Logic.SpaceShip.CrewState
+﻿using Core.enums;
+
+namespace Logic.SpaceShip.CrewState
 {
     public class CrewIdleState : ICrewState
     {
+        public CrewStateType StateType => CrewStateType.Idle;
         public void Enter(CrewLogic crew)
         {
             // 대기 애니메이션 무전 발송

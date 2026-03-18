@@ -8,9 +8,12 @@ namespace Presentation.Views
     public class TileView : MonoBehaviour
     {
         [SerializeField] private TileCoord _tileCoord;
+        [SerializeField] private GameObject _fireObject;
 
         private ITileLogic _tileLogic;
         public TileCoord TileCoord => _tileCoord;
+
+        private float _lastFireLevel;
 
 #if UNITY_EDITOR
         private void OnDrawGizmos()
@@ -34,6 +37,18 @@ namespace Presentation.Views
         public void Bind(ITileLogic logic)
         {
             _tileLogic = logic;
+            logic.OnFireChanged += HandleFireChanged;
+            HandleFireChanged(logic.FireLevel);
+        }
+
+        private void HandleFireChanged(float fireLevel)
+        {
+            _lastFireLevel = fireLevel;
+            if (_fireObject != null)
+            {
+                _fireObject.SetActive(fireLevel > 0f);
+            }
+              
         }
     }
 }

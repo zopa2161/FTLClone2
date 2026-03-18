@@ -1,10 +1,13 @@
-﻿using Core.Interface;
+﻿using Core.enums;
+using Core.Interface;
 using UnityEngine;
 
 namespace Logic.SpaceShip.CrewState
 {
     public class CrewWorkingState : ICrewState
     {
+        public CrewStateType StateType => CrewStateType.Working;
+
         private IRoomLogic _workingRoom;
 
         // 상태를 생성할 때, 어느 방에서 일하는지 알려줍니다.

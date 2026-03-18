@@ -12,6 +12,8 @@ namespace Core.Interface
 
         float AverageOxygen { get; }
 
+        bool IsOnFire { get; }
+
         //===전력량===
         int CurrentPower { get; }
         int MaxPowerCapacity { get; }
